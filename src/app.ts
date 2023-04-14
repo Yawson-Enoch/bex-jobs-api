@@ -1,8 +1,11 @@
 import 'express-async-errors';
+import * as dotenv from 'dotenv';
 import express from 'express';
 import authRoute from './routes/auth.route';
 import errorMiddleware from './middleware/error.middleware';
 import routeNotFoundMiddleware from './middleware/routeNotFound.middleware';
+
+dotenv.config();
 
 const app = express();
 
