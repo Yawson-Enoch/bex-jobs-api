@@ -6,7 +6,7 @@
   "scripts": {
     "test:dev": "NODE_ENV=development ts-node-dev --respawn --transpile-only src/app.ts",
     "test:prod": "NODE_ENV=production ts-node-dev --respawn --transpile-only src/app.ts",
-    "build": "eslint \"src/**/*.ts\" && rm -rf dist && tsc",
+    "build": "eslint \"src/**/*.ts\" && rm -rf dist && tsc && cp -r src/public dist",
     "start:dev": "NODE_ENV=development node dist/app.js",
     "start:prod": "NODE_ENV=production node dist/app.js",
     "lint": "eslint \"src/**/*.ts\"",
