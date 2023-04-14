@@ -1,3 +1,4 @@
+import 'express-async-errors';
 import express from 'express';
 import authRoute from './routes/auth.route';
 import errorMiddleware from './middleware/error.middleware';
@@ -13,6 +14,7 @@ app.use(routeNotFoundMiddleware);
 app.use(errorMiddleware);
 
 const port = process.env.PORT || 5000;
+
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}...`);
 });
