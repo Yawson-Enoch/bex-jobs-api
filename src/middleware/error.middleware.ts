@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
@@ -8,6 +9,7 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { BadRequestError, CustomError } from '../errors';
+import { capitalizeFirstLetterOfWord } from '../lib/util';
 
 const handleCastErrorDb = (err: any) => {
   const message = `Invalid ${err.path}: ${err.value}`;
@@ -24,6 +26,17 @@ const handleValidationErrorDb = (err: any) => {
     (validationError: any) => validationError.message
   );
   const message = `Invalid input data. ${validationErrors.join('. ')}`;
+  return new BadRequestError(message);
+};
+
+const handleZodError = (err: any) => {
+  const validationErrors = err.issues.map(
+    (issue: any) =>
+      `${capitalizeFirstLetterOfWord(
+        issue.path[1]
+      )}: ${issue.message.toLowerCase()}`
+  );
+  const message = `${validationErrors.join('. ')}`;
   return new BadRequestError(message);
 };
 
@@ -46,7 +59,7 @@ const sendErrorProd = (err: any, res: Response) => {
   }
 };
 
-const ErrorMiddleware: ErrorRequestHandler = (
+const errorMiddleware: ErrorRequestHandler = (
   err: any,
   req: Request,
   res: Response,
@@ -62,8 +75,11 @@ const ErrorMiddleware: ErrorRequestHandler = (
     if (err.name === 'ValidationError') {
       return sendErrorProd(handleValidationErrorDb(err), res);
     }
+    if (err.name === 'ZodError') {
+      return sendErrorProd(handleZodError(err), res);
+    }
     return sendErrorProd(err, res);
   }
   return sendErrorDev(err, res);
 };
-export default ErrorMiddleware;
+export default errorMiddleware;

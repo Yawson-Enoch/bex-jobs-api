@@ -1,13 +1,16 @@
 import express from 'express';
+import authRoute from './routes/auth.route';
+import errorMiddleware from './middleware/error.middleware';
 
 const app = express();
 
+app.use(express.json());
+
+app.use('/api/v1/auth', authRoute);
+
+app.use(errorMiddleware);
+
 const port = process.env.PORT || 5000;
-
-app.get('/api/v1/jobs', (req, res) => {
-  res.status(200).json({ message: 'You have successfully hit this route' });
-});
-
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}...`);
 });
