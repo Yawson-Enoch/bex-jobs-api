@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import type { TypeLogin, TypeRegister } from '../schemas/auth.schema';
+import { TypeLogin, TypeRegister } from '../schemas/auth.schema';
 
 const register = (
   req: Request<unknown, unknown, TypeRegister>,
