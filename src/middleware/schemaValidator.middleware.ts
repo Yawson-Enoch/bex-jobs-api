@@ -4,7 +4,7 @@ import { AnyZodObject } from 'zod';
 const schemaValidatorMiddleware =
   (schema: AnyZodObject) =>
   (
-    req: Request<unknown, unknown, object>,
+    req: Request<unknown, unknown, unknown>,
     res: Response,
     next: NextFunction
   ) => {
