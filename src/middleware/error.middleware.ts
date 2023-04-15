@@ -65,21 +65,22 @@ const errorMiddleware: ErrorRequestHandler = (
   res: Response,
   next: NextFunction
 ) => {
+  let customError = { ...err };
   if (process.env.NODE_ENV === 'production') {
-    if (err.name === 'CastError') {
-      return sendErrorProd(handleCastErrorDb(err), res);
+    if (customError.name === 'CastError') {
+      customError = handleCastErrorDb(customError);
     }
-    if (err.code === 11000) {
-      return sendErrorProd(handleDuplicateFieldsDb(err), res);
+    if (customError.code === 11000) {
+      customError = handleDuplicateFieldsDb(customError);
     }
-    if (err.name === 'ValidationError') {
-      return sendErrorProd(handleValidationErrorDb(err), res);
+    if (customError.name === 'ValidationError') {
+      customError = handleValidationErrorDb(customError);
     }
-    if (err.name === 'ZodError') {
-      return sendErrorProd(handleZodError(err), res);
+    if (customError.name === 'ZodError') {
+      customError = handleZodError(customError);
     }
-    return sendErrorProd(err, res);
+    return sendErrorProd(customError, res);
   }
-  return sendErrorDev(err, res);
+  return sendErrorDev(customError, res);
 };
 export default errorMiddleware;
