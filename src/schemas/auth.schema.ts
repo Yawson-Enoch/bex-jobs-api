@@ -8,9 +8,17 @@ const bodySchema = z
         invalid_type_error: 'Name must be a string',
       })
       .min(2, { message: 'Name must be 2 or more characters long' }),
-    email: z.string().email({ message: 'Invalid email address' }),
+    email: z
+      .string({
+        required_error: 'Email is required',
+        invalid_type_error: 'Email must be a string',
+      })
+      .email({ message: 'Invalid email address' }),
     password: z
-      .string()
+      .string({
+        required_error: 'Password is required',
+        invalid_type_error: 'Password must be a string',
+      })
       .min(6, { message: 'Password must be 6 or more characters long' }),
   })
   .strict();
