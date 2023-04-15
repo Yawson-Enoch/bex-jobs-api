@@ -6,6 +6,7 @@ import authRoute from './routes/auth.route';
 import rootRoute from './routes/root.route';
 import errorMiddleware from './middleware/error.middleware';
 import routeNotFoundMiddleware from './middleware/routeNotFound.middleware';
+import connectDb from './lib/connectDb';
 
 dotenv.config();
 
@@ -21,7 +22,12 @@ app.use(routeNotFoundMiddleware);
 app.use(errorMiddleware);
 
 const port = process.env.PORT || 5000;
-
-app.listen(port, () => {
-  console.log(`Server is listening on port ${port}...`);
-});
+connectDb(process.env.MONGO_URI)
+  .then(() => {
+    app.listen(port, () =>
+      console.log(`Db connected and server is listening on port ${port}...`)
+    );
+  })
+  .catch((err: Error) =>
+    console.error({ errorName: err.name, errorMessage: err.message })
+  );
