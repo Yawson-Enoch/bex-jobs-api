@@ -8,56 +8,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { BadRequestError, CustomError } from '../errors';
 import { capitalizeFirstLetterOfWord } from '../lib/util';
-
-const handleCastErrorDb = (err: any) => {
-  const message = `Invalid ${err.path}: ${err.value}`;
-  return new BadRequestError(message);
-};
-
-const handleDuplicateFieldsDb = (err: any) => {
-  const message = `Duplicate field value: ${err.keyValue.name}. Please use another value`;
-  return new BadRequestError(message);
-};
-
-const handleValidationErrorDb = (err: any) => {
-  const validationErrors = Object.values(err.errors).map(
-    (validationError: any) => validationError.message
-  );
-  const message = `Invalid input data. ${validationErrors.join('. ')}`;
-  return new BadRequestError(message);
-};
-
-const handleZodError = (err: any) => {
-  const validationErrors = err.issues.map(
-    (issue: any) =>
-      `${capitalizeFirstLetterOfWord(
-        issue.path[1]
-      )}: ${issue.message.toLowerCase()}`
-  );
-  const message = `${validationErrors.join('. ')}`;
-  return new BadRequestError(message);
-};
-
-const sendErrorDev = (err: any, res: Response) => {
-  res.status(err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
-    msg: err.message || 'Something went wrong, try again later',
-    name: err.name,
-    error: err,
-    stack: err.stack,
-  });
-};
-
-const sendErrorProd = (err: any, res: Response) => {
-  if (err instanceof CustomError) {
-    res.status(err.statusCode).json({ msg: err.message });
-  } else {
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ msg: 'Something went wrong, try again later' });
-  }
-};
 
 const errorMiddleware: ErrorRequestHandler = (
   err: any,
@@ -65,22 +16,49 @@ const errorMiddleware: ErrorRequestHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  let customError = { ...err };
-  if (process.env.NODE_ENV === 'production') {
-    if (customError.name === 'CastError') {
-      customError = handleCastErrorDb(customError);
-    }
-    if (customError.code === 11000) {
-      customError = handleDuplicateFieldsDb(customError);
-    }
-    if (customError.name === 'ValidationError') {
-      customError = handleValidationErrorDb(customError);
-    }
-    if (customError.name === 'ZodError') {
-      customError = handleZodError(customError);
-    }
-    return sendErrorProd(customError, res);
+  const customError = {
+    statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+    msg: err.message || 'Something went wrong try again later',
+  };
+
+  if (err.name === 'CastError') {
+    const message = `Invalid ${err.path}: ${err.value}`;
+    customError.msg = message;
+    customError.statusCode = StatusCodes.BAD_REQUEST;
   }
-  return sendErrorDev(customError, res);
+  if (err.code && err.code === 11000) {
+    const message = `Duplicate field value: ${err.keyValue.name}. Please use another value`;
+    customError.msg = message;
+    customError.statusCode = StatusCodes.BAD_REQUEST;
+  }
+  if (err.name === 'ValidationError') {
+    const validationErrors = Object.values(err.errors).map(
+      (validationError: any) => validationError.message
+    );
+    const message = `Invalid input data. ${validationErrors.join('. ')}`;
+    customError.msg = message;
+    customError.statusCode = StatusCodes.BAD_REQUEST;
+  }
+  if (err.name === 'ZodError') {
+    const validationErrors = err.issues.map(
+      (issue: any) =>
+        `${capitalizeFirstLetterOfWord(
+          issue.path[1]
+        )}: ${issue.message.toLowerCase()}`
+    );
+    const message = `${validationErrors.join('. ')}`;
+    customError.msg = message;
+    customError.statusCode = StatusCodes.BAD_REQUEST;
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(customError.statusCode).json({ msg: customError.msg });
+  }
+  return res.status(customError.statusCode).json({
+    name: err.name,
+    msg: customError.msg,
+    error: err,
+    stack: err.stack,
+  });
 };
 export default errorMiddleware;
