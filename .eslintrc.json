@@ -23,6 +23,7 @@
     "no-console": "off",
     "@typescript-eslint/no-unused-vars": "off",
     "unused-imports/no-unused-imports": "warn",
+    "@typescript-eslint/no-misused-promises": "off",
     "unused-imports/no-unused-vars": [
       "warn",
       {
