@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable unused-imports/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -37,17 +35,17 @@ const errorMiddleware: ErrorRequestHandler = (
   if (err.name === 'ValidationError') {
     const validationErrors = Object.values(
       err.errors as { [s: string]: unknown } | ArrayLike<unknown>
-    ).map((validationError: any) => validationError.message);
+    ).map((validationError: any) => validationError.message as string);
     const message = `Invalid input data. ${validationErrors.join('. ')}`;
     customError.msg = message;
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
   if (err.name === 'ZodError') {
-    const validationErrors = err.issues.map(
+    const validationErrors = (err.issues as any[]).map(
       (issue: any) =>
         `${capitalizeFirstLetterOfWord(
           (issue.path[1] || issue.path[0]) as string
-        )}: ${issue.message.toLowerCase()}`
+        )}: ${(issue.message as string).toLowerCase()}`
     );
     const message = `${validationErrors.join('. ')}`;
     customError.msg = message;
