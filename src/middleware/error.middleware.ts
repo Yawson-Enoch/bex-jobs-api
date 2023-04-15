@@ -44,10 +44,10 @@ const errorMiddleware: ErrorRequestHandler = (
     const validationErrors = (err.issues as any[]).map(
       (issue: any) =>
         `${capitalizeFirstLetterOfWord(
-          (issue.path[1] || issue.path[0]) as string
-        )}: ${(issue.message as string).toLowerCase()}`
+          (issue.message as string).toLowerCase()
+        )}`
     );
-    const message = `${validationErrors.join('. ')}`;
+    const message = `Invalid input data. ${validationErrors.join('. ')}`;
     customError.msg = message;
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
