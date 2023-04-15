@@ -25,8 +25,12 @@ const errorMiddleware: ErrorRequestHandler = (
     customError.msg = message;
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
-  if (err.code && err.code === 11000) {
-    const message = `Duplicate field value: ${err.keyValue.name}. Please use another value`;
+  if (err.name === 'MongoServerError' && err.code === 11000) {
+    const errTexts: string[] = Object.keys(err.keyValue as object);
+    const validationError = errTexts.map((text: string) => text)[0];
+    const message = `${capitalizeFirstLetterOfWord(
+      validationError
+    )} already exists, please use another ${validationError}`;
     customError.msg = message;
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
