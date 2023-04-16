@@ -5,6 +5,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { CustomError } from '../errors';
 import { capitalizeFirstLetterOfWord } from '../lib/util';
 
 const errorMiddleware: ErrorRequestHandler = (
@@ -14,8 +15,14 @@ const errorMiddleware: ErrorRequestHandler = (
   next: NextFunction
 ) => {
   const customError = {
-    statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
-    msg: err.message || 'Something went wrong try again later',
+    statusCode:
+      err instanceof CustomError
+        ? err.statusCode
+        : StatusCodes.INTERNAL_SERVER_ERROR,
+    msg:
+      err instanceof CustomError
+        ? err.message
+        : 'Something went wrong try again later',
   };
 
   if (err.name === 'CastError') {
@@ -53,11 +60,9 @@ const errorMiddleware: ErrorRequestHandler = (
   }
 
   if (process.env.NODE_ENV === 'production') {
-    return res
-      .status(customError.statusCode as number)
-      .json({ msg: customError.msg });
+    return res.status(customError.statusCode).json({ msg: customError.msg });
   }
-  return res.status(customError.statusCode as number).json({
+  return res.status(customError.statusCode).json({
     name: err.name,
     msg: customError.msg,
     error: err,
