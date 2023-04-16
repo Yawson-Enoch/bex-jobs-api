@@ -22,7 +22,7 @@ const errorMiddleware: ErrorRequestHandler = (
     msg:
       err instanceof CustomError
         ? err.message
-        : 'Something went wrong try again later',
+        : 'Something went wrong, try again later',
   };
 
   if (err.name === 'CastError') {
