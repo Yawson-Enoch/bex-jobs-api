@@ -20,16 +20,23 @@ const bodySchema = z
         invalid_type_error: 'Password must be a string',
       })
       .min(6, { message: 'Password must be 6 or more characters long' }),
+    passwordConfirm: z.string({
+      required_error: 'Password confirmation value is required',
+      invalid_type_error: 'Password confirmation value must be a string',
+    }),
   })
   .strict();
 
 const registerSchema = z.object({
-  body: bodySchema,
+  body: bodySchema.refine((data) => data.password === data.passwordConfirm, {
+    message: 'Passwords do not match',
+    path: ['passwordConfirm'],
+  }),
 });
 type TypeRegister = z.infer<typeof registerSchema>['body'];
 
 const loginSchema = z.object({
-  body: bodySchema.omit({ name: true }),
+  body: bodySchema.omit({ name: true, passwordConfirm: true }),
 });
 type TypeLogin = z.infer<typeof loginSchema>['body'];
 
