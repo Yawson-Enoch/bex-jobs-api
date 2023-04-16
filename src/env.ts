@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const envVariables = z.object({
   MONGO_URI: z.string(),
+  PSWD_SALT: z.string(),
 });
 
 envVariables.parse(process.env);

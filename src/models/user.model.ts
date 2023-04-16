@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
   {
@@ -22,6 +23,12 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// eslint-disable-next-line func-names
+userSchema.pre('save', async function () {
+  const salt = await bcrypt.genSalt(Number(process.env.PSWD_SALT));
+  this.password = await bcrypt.hash(this.password, salt);
+});
 
 const User = mongoose.model('User', userSchema);
 export default User;
