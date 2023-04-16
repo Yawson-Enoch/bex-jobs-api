@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import userModel from '../models/user.model';
+import User from '../models/user.model';
 import { TypeLogin, TypeRegister } from '../schemas/auth.schema';
 
 const register = async (
   req: Request<unknown, unknown, TypeRegister>,
   res: Response
 ) => {
-  await userModel.create(req.body);
+  await User.create(req.body);
   res.status(StatusCodes.OK).json({ msg: 'User created successfully' });
 };
 
