@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { BadRequestError, NotFoundError } from '../errors';
 import User from '../models/user.model';
 import { TypeLogin, TypeRegister } from '../schemas/auth.schema';
 
@@ -11,10 +12,21 @@ const register = async (
   res.status(StatusCodes.OK).json({ msg: 'User created successfully' });
 };
 
-const login = (req: Request<unknown, unknown, TypeLogin>, res: Response) => {
-  res
-    .status(StatusCodes.OK)
-    .json({ msg: 'This is the incredible login route', data: req.body });
+const login = async (
+  req: Request<unknown, unknown, TypeLogin>,
+  res: Response
+) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    throw new NotFoundError(
+      'User does not exist, make sure you have provided the correct email'
+    );
+  }
+
+  const isAMatchingPassword = await user.comparePassword(req.body.password);
+  if (!isAMatchingPassword) throw new BadRequestError('Password is incorrect');
+  res.status(StatusCodes.OK).json({ msg: 'Login successful', data: user });
 };
 
 export { login, register };
