@@ -5,6 +5,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import env from '../env';
 import { CustomError } from '../errors';
 import { capitalizeFirstLetterOfWord } from '../lib/util';
 
@@ -59,7 +60,7 @@ const errorMiddleware: ErrorRequestHandler = (
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 
-  if (process.env.NODE_ENV === 'production') {
+  if (env.isProduction) {
     return res.status(customError.statusCode).json({ msg: customError.msg });
   }
   return res.status(customError.statusCode).json({

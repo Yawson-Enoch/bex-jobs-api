@@ -1,6 +1,7 @@
 /* eslint-disable func-names */
 import { Model, Schema, model } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import env from '../env';
 
 interface IUser {
   name: string;
@@ -40,7 +41,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
 );
 
 userSchema.pre('save', async function () {
-  const salt = await bcrypt.genSalt(Number(process.env.PSWD_SALT));
+  const salt = await bcrypt.genSalt(env.PSWD_SALT);
   this.password = await bcrypt.hash(this.password, salt);
 });
 

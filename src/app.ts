@@ -1,7 +1,7 @@
 import 'express-async-errors';
-import * as dotenv from 'dotenv';
 import express from 'express';
 import path from 'path';
+import env from './env';
 import authRoute from './routes/auth.route';
 import rootRoute from './routes/root.route';
 import errorMiddleware from './middleware/error.middleware';
@@ -14,8 +14,6 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-dotenv.config();
-
 const app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -27,16 +25,16 @@ app.use('/api/v1/auth', authRoute);
 app.use(routeNotFoundMiddleware);
 app.use(errorMiddleware);
 
-connectDb(process.env.MONGO_URI)
+connectDb(env.MONGO_URI)
   .then(() => console.log('Db connected successfully'))
   .catch((err: Error) =>
     console.error({ errorName: err.name, errorMessage: err.message })
   );
 
-const port = process.env.PORT || 5000;
-const server = app.listen(port, () =>
-  console.log(`Server is listening on port ${port}...`)
-);
+const server = app.listen(env.PORT, () => {
+  const serverType = env.isProduction ? 'production' : 'dev';
+  console.log(`Server (${serverType}) running on port ${env.PORT}`);
+});
 
 process.on('unhandledRejection', (err: Error) => {
   console.error({ errorName: err.name, errorMessage: err.message });
