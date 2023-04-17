@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import jwt from 'jsonwebtoken';
+import env from '../env';
 import { BadRequestError } from '../errors';
 import User from '../models/user.model';
 import { TypeLogin, TypeRegister } from '../schemas/auth.schema';
@@ -23,7 +25,18 @@ const login = async (
   const isAMatchingPassword = await user.comparePassword(req.body.password);
   if (!isAMatchingPassword) throw new BadRequestError('Password is incorrect');
 
-  res.status(StatusCodes.OK).json({ msg: 'Login successful', data: user });
+  const token = jwt.sign(
+    { userId: user._id, username: user.name },
+    env.JWT_SECRET_KEY,
+    {
+      expiresIn: env.JWT_EXPIRY_DATE,
+    }
+  );
+
+  res.status(StatusCodes.OK).json({
+    msg: 'Login successful',
+    data: { token, userInfo: { userId: user._id, username: user.name } },
+  });
 };
 
 export { login, register };

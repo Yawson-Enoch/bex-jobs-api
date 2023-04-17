@@ -13,6 +13,8 @@ const env = cleanEnv(process.env, {
   }),
   MONGO_URI: str(),
   PSWD_SALT: num(),
+  JWT_SECRET_KEY: str(),
+  JWT_EXPIRY_DATE: str(),
 });
 
 export default env;
