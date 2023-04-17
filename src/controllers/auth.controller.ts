@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { BadRequestError, NotFoundError } from '../errors';
+import { BadRequestError } from '../errors';
 import User from '../models/user.model';
 import { TypeLogin, TypeRegister } from '../schemas/auth.schema';
 
@@ -18,14 +18,11 @@ const login = async (
 ) => {
   const user = await User.findOne({ email: req.body.email });
 
-  if (!user) {
-    throw new NotFoundError(
-      'User does not exist, make sure you have provided the correct email'
-    );
-  }
+  if (!user) throw new BadRequestError('Email is incorrect');
 
   const isAMatchingPassword = await user.comparePassword(req.body.password);
   if (!isAMatchingPassword) throw new BadRequestError('Password is incorrect');
+
   res.status(StatusCodes.OK).json({ msg: 'Login successful', data: user });
 };
 
