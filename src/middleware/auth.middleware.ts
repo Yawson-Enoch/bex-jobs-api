@@ -1,23 +1,17 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import env from '../env';
 import { UnauthenticatedError } from '../errors';
 
-export interface ICustomRequest extends Request {
-  user: {
-    userId: Types.ObjectId;
-    username: string;
-  };
+export interface IUser {
+  userId: Types.ObjectId;
+  username: string;
 }
 
-type TypeTokenInfo = jwt.JwtPayload & ICustomRequest['user'];
+type TypeTokenInfo = jwt.JwtPayload & IUser;
 
-const authMiddleware = (
-  req: ICustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
+const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer')) {
