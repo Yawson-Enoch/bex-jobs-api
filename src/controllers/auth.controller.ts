@@ -20,7 +20,7 @@ const login = async (
 ) => {
   const user = await User.findOne({ email: req.body.email });
 
-  if (!user) throw new BadRequestError('Email is incorrect');
+  if (!user) throw new BadRequestError('Invalid credentials');
 
   const isAMatchingPassword = await user.comparePassword(req.body.password);
   if (!isAMatchingPassword) throw new BadRequestError('Password is incorrect');
