@@ -8,6 +8,7 @@ import jobRoute from './routes/job.route';
 import errorMiddleware from './middleware/error.middleware';
 import routeNotFoundMiddleware from './middleware/routeNotFound.middleware';
 import connectDb from './lib/connectDb';
+import authMiddleware from './middleware/auth.middleware';
 
 process.on('uncaughtException', (err) => {
   console.error({ errorName: err.name, errorMessage: err.message });
@@ -22,7 +23,7 @@ app.use(express.json());
 
 app.use('/', rootRoute);
 app.use('/api/v1/auth', authRoute);
-app.use('/api/v1/jobs', jobRoute);
+app.use('/api/v1/jobs', authMiddleware, jobRoute);
 
 app.use(routeNotFoundMiddleware);
 app.use(errorMiddleware);
