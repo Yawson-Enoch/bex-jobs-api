@@ -4,6 +4,7 @@ import path from 'path';
 import env from './env';
 import authRoute from './routes/auth.route';
 import rootRoute from './routes/root.route';
+import jobRoute from './routes/job.route';
 import errorMiddleware from './middleware/error.middleware';
 import routeNotFoundMiddleware from './middleware/routeNotFound.middleware';
 import connectDb from './lib/connectDb';
@@ -21,6 +22,7 @@ app.use(express.json());
 
 app.use('/', rootRoute);
 app.use('/api/v1/auth', authRoute);
+app.use('/api/v1/jobs', jobRoute);
 
 app.use(routeNotFoundMiddleware);
 app.use(errorMiddleware);
