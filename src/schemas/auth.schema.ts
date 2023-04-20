@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const bodySchema = z.object({
-  name: z
+  username: z
     .string({
       required_error: 'Name is required',
       invalid_type_error: 'Name must be a string',
@@ -39,7 +39,7 @@ const registerSchema = bodySchema.refine(
 );
 type TypeRegister = z.infer<typeof registerSchema>;
 
-const loginSchema = bodySchema.omit({ name: true, passwordConfirm: true });
+const loginSchema = bodySchema.omit({ username: true, passwordConfirm: true });
 type TypeLogin = z.infer<typeof loginSchema>;
 
 export { registerSchema, loginSchema, TypeRegister, TypeLogin };

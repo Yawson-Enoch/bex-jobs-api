@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import env from '../env';
 
 interface IUser {
-  name: string;
+  username: string;
   email: string;
   password: string;
   createdAt: Date;
@@ -19,7 +19,7 @@ type UserModel = Model<IUser, Record<string, never>, IUserMethods>;
 
 const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
-    name: {
+    username: {
       type: String,
       required: [true, 'Name is required'],
       minLength: [2, 'Name must be 2 or more characters long'],

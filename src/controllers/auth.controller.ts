@@ -26,7 +26,7 @@ const login = async (
   if (!isAMatchingPassword) throw new BadRequestError('Password is incorrect');
 
   const token = jwt.sign(
-    { userId: user._id, username: user.name },
+    { _id: user._id, username: user.username, email: user.email },
     env.JWT_SECRET_KEY,
     {
       expiresIn: env.JWT_EXPIRY_DATE,
@@ -35,7 +35,14 @@ const login = async (
 
   res.status(StatusCodes.OK).json({
     msg: 'Login successful',
-    data: { token, userInfo: { userId: user._id, username: user.name } },
+    data: {
+      token,
+      userInfo: {
+        userId: user._id.toString(),
+        username: user.username,
+        email: user.email,
+      },
+    },
   });
 };
 
