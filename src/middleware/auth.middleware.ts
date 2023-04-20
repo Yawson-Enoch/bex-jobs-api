@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import env from '../env';
 import { UnauthenticatedError } from '../errors';
+import User from '../models/user.model';
 
 export interface IUser {
   _id: Types.ObjectId;
@@ -12,7 +13,11 @@ export interface IUser {
 
 type TypeTokenInfo = jwt.JwtPayload & IUser;
 
-const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+const authMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -23,11 +28,16 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const decodedToken = jwt.verify(token, env.JWT_SECRET_KEY) as TypeTokenInfo;
-    req.user = {
-      _id: decodedToken._id,
-      username: decodedToken.username,
-      email: decodedToken.email,
-    };
+
+    const user = await User.findById<IUser>(decodedToken._id).select(
+      'username email'
+    );
+
+    if (!user) {
+      throw new UnauthenticatedError('Authentication error');
+    }
+
+    req.user = user;
   } catch (error) {
     throw new UnauthenticatedError('Authentication error');
   }
