@@ -2,6 +2,7 @@ import 'express-async-errors';
 import express from 'express';
 import path from 'path';
 import env from './env';
+import statusRoute from './routes/status.route';
 import authRoute from './routes/auth.route';
 import rootRoute from './routes/root.route';
 import jobRoute from './routes/job.route';
@@ -22,6 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 app.use('/', rootRoute);
+app.use('/api/v1/status', statusRoute);
 app.use('/api/v1/auth', authRoute);
 app.use('/api/v1/jobs', authMiddleware, jobRoute);
 
