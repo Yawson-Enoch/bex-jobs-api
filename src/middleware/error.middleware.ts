@@ -49,12 +49,18 @@ const errorMiddleware: ErrorRequestHandler = (
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
   if (err.name === 'ZodError') {
-    const validationErrors = (err.issues as any[]).map(
-      (issue: any) =>
-        `${capitalizeFirstLetterOfWord(
-          (issue.message as string).toLowerCase()
-        )}`
-    );
+    const validationErrors = (err.issues as any[]).map((issue: any) => {
+      if (issue.code === 'invalid_enum_value') {
+        const options = (issue.options as any[]).join(', ');
+        const message =
+          `The accepted values are for ${issue.path[0]} are ${options}`.toLowerCase();
+        return `${capitalizeFirstLetterOfWord(message)}`;
+      }
+
+      return `${capitalizeFirstLetterOfWord(
+        (issue.message as string).toLowerCase()
+      )}`;
+    });
     const message = `Invalid input data. ${validationErrors.join('. ')}`;
     customError.msg = message;
     customError.statusCode = StatusCodes.BAD_REQUEST;
