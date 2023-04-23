@@ -20,8 +20,12 @@ const authMiddleware = async (
 ) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new UnauthenticatedError('Authentication error');
+  if (!authHeader) {
+    throw new UnauthenticatedError('Missing Authorization header');
+  }
+
+  if (!authHeader.startsWith('Bearer ')) {
+    throw new UnauthenticatedError('Invalid Authorization header format');
   }
 
   const token = authHeader.split(' ')[1];
