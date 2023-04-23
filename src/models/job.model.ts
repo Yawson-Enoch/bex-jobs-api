@@ -1,31 +1,31 @@
 import { model, Schema, Model, Types } from 'mongoose';
+import { TypeJob } from '../schemas/job.schema';
 
-interface IJob {
-  company: string;
-  position: string;
-  status?: 'interview' | 'declined' | 'pending';
+type TypeJobExtended = TypeJob & {
+  createdBy: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
-  createdBy: Types.ObjectId;
-}
+};
 
-type TypeJobModel = Model<IJob, Record<string, never>>;
+type TypeJobModel = Model<TypeJobExtended, Record<string, never>>;
 
-const jobSchema = new Schema<IJob, TypeJobModel>(
+const jobSchema = new Schema<TypeJobExtended, TypeJobModel>(
   {
     company: {
       type: String,
       required: [true, 'Please provide company name'],
-      maxLength: 50,
+      minlength: 2,
+      maxlength: 100,
     },
     position: {
       type: String,
       required: [true, 'Please provide position'],
-      maxLength: 200,
+      minlength: 2,
+      maxlength: 200,
     },
     status: {
       type: String,
-      enum: ['interview', 'declined', 'pending'],
+      enum: ['pending', 'interview', 'declined'],
       default: 'pending',
     },
     createdBy: {
@@ -39,5 +39,5 @@ const jobSchema = new Schema<IJob, TypeJobModel>(
   }
 );
 
-const Job = model<IJob, TypeJobModel>('Job', jobSchema);
+const Job = model<TypeJobExtended, TypeJobModel>('Job', jobSchema);
 export default Job;
