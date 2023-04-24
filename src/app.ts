@@ -34,7 +34,7 @@ app.use(cors(corsOptions));
 app.use(xss());
 
 app.use('/', rootRoute);
-app.use('/api/v1/status', statusRoute);
+app.use('/status', statusRoute);
 app.use('/api/v1/auth', authRoute);
 app.use('/api/v1/jobs', authMiddleware, jobRoute);
 
