@@ -1,6 +1,9 @@
 import 'express-async-errors';
 import express from 'express';
 import path from 'path';
+import cors from 'cors';
+import xss from 'xss-clean';
+import helmet from 'helmet';
 import env from './env';
 import statusRoute from './routes/status.route';
 import authRoute from './routes/auth.route';
@@ -10,6 +13,8 @@ import errorMiddleware from './middleware/error.middleware';
 import routeNotFoundMiddleware from './middleware/routeNotFound.middleware';
 import connectDb from './lib/connectDb';
 import authMiddleware from './middleware/auth.middleware';
+import corsOptions from './lib/corsOptions';
+import apiLimiter from './lib/rateLimiter';
 
 process.on('uncaughtException', (err) => {
   console.error({ errorName: err.name, errorMessage: err.message });
@@ -19,8 +24,14 @@ process.on('uncaughtException', (err) => {
 
 const app = express();
 
+app.use(apiLimiter);
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+
+app.use(helmet());
+app.use(cors(corsOptions));
+app.use(xss());
 
 app.use('/', rootRoute);
 app.use('/api/v1/status', statusRoute);

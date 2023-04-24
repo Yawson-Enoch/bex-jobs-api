@@ -2,5 +2,12 @@ import CustomError from './custom.error';
 import BadRequestError from './badRequest.error';
 import UnauthenticatedError from './unauthenticated.error';
 import NotFoundError from './notFound.error';
+import ForbiddenError from './forbidden.error';
 
-export { CustomError, BadRequestError, UnauthenticatedError, NotFoundError };
+export {
+  CustomError,
+  BadRequestError,
+  UnauthenticatedError,
+  NotFoundError,
+  ForbiddenError,
+};
