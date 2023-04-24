@@ -11,7 +11,7 @@ const register = async (
   res: Response
 ) => {
   await User.create(req.body);
-  res.status(StatusCodes.OK).json({ msg: 'User created successfully' });
+  res.status(StatusCodes.CREATED).json({ msg: 'User created successfully' });
 };
 
 const login = async (
