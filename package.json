@@ -8,7 +8,7 @@
     "start:dev": "node dist/app.js",
     "local:prod": "NODE_ENV=production ts-node-dev --respawn --transpile-only src/app.ts",
     "local:dev": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "build:prod": "eslint \"src/**/*.ts\" && pnpm ci && rm -rf dist && tsc && cp -r src/public dist",
+    "build:prod": "pnpm install && tsc && cp -r src/public dist",
     "build:dev": "tsc && cp -r src/public dist",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint --fix \"src/**/*.ts\"",
