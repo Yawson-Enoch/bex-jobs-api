@@ -13,7 +13,6 @@ import errorMiddleware from './middleware/error.middleware';
 import routeNotFoundMiddleware from './middleware/routeNotFound.middleware';
 import connectDb from './lib/connectDb';
 import authMiddleware from './middleware/auth.middleware';
-import corsOptions from './lib/corsOptions';
 import apiLimiter from './lib/rateLimiter';
 
 process.on('uncaughtException', (err) => {
@@ -30,7 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 app.use(helmet());
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(xss());
 
 app.use('/', rootRoute);
