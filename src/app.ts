@@ -4,6 +4,8 @@ import path from 'path';
 import cors from 'cors';
 import xss from 'xss-clean';
 import helmet from 'helmet';
+import YAML from 'yamljs';
+import swaggerUI, { JsonObject } from 'swagger-ui-express';
 import env from './env';
 import statusRoute from './routes/status.route';
 import authRoute from './routes/auth.route';
@@ -21,6 +23,10 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+const swaggerDocument = YAML.load(
+  path.join(__dirname, '..', 'swagger.yaml')
+) as JsonObject;
+
 const app = express();
 
 app.use(apiLimiter);
@@ -34,6 +40,7 @@ app.use(xss());
 
 app.use('/', rootRoute);
 app.use('/status', statusRoute);
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 app.use('/api/v1/auth', authRoute);
 app.use('/api/v1/jobs', authMiddleware, jobRoute);
 

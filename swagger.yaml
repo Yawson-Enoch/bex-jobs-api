@@ -1,0 +1,275 @@
+openapi: 3.0.0
+info:
+  title: Bex Jobs API
+  contact: {}
+  version: '1.0'
+servers:
+  - url: https://bex-jobs-api.onrender.com/api/v1
+    variables: {}
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register User
+      operationId: RegisterUser
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: application/json
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/registerrequest'
+                - example:
+                    username: doe
+                    email: johndoe@gmail.com
+                    password: top-secret
+                    passwordConfirm: top-secret
+            example:
+              username: doe
+              email: johndoe@gmail.com
+              password: top-secret
+              passwordConfirm: top-secret
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security: []
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login User
+      operationId: LoginUser
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/loginrequest'
+                - example:
+                    email: johndoe@gmail.com
+                    password: top-secret
+            example:
+              email: johndoe@gmail.com
+              password: top-secret
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security: []
+  /jobs:
+    post:
+      tags:
+        - Job
+      summary: Create Job
+      operationId: CreateJob
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/createjobrequest'
+                - example:
+                    company: bex ltd
+                    position: mobile developer
+            example:
+              company: bex ltd
+              position: mobile developer
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+        - bearer: []
+    get:
+      tags:
+        - Job
+      summary: Get All  Jobs
+      operationId: GetAllJobs
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+        - bearer: []
+    delete:
+      tags:
+        - Job
+      summary: Delete All Jobs
+      operationId: DeleteAllJobs
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+        - bearer: []
+  /jobs/{jobId}:
+    get:
+      tags:
+        - Job
+      summary: Get Single Job
+      operationId: GetSingleJob
+      parameters:
+        - name: jobId
+          in: path
+          description: ''
+          required: true
+          style: simple
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+        - bearer: []
+    patch:
+      tags:
+        - Job
+      summary: Update Job
+      operationId: UpdateJob
+      parameters:
+        - name: jobId
+          in: path
+          description: ''
+          required: true
+          style: simple
+          schema:
+            type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/updatejobrequest'
+                - example:
+                    company: doe ltd
+                    position: backend developer
+            example:
+              company: doe ltd
+              position: backend developer
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+        - bearer: []
+    delete:
+      tags:
+        - Job
+      summary: Delete Job
+      operationId: DeleteJob
+      parameters:
+        - name: jobId
+          in: path
+          description: ''
+          required: true
+          style: simple
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+        - bearer: []
+components:
+  schemas:
+    registerrequest:
+      title: registerrequest
+      required:
+        - username
+        - email
+        - password
+        - passwordConfirm
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        passwordConfirm:
+          type: string
+      example:
+        username: doe
+        email: johndoe@gmail.com
+        password: top-secret
+        passwordConfirm: top-secret
+    loginrequest:
+      title: loginrequest
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      example:
+        email: johndoe@gmail.com
+        password: top-secret
+    createjobrequest:
+      title: createjobrequest
+      required:
+        - company
+        - position
+      type: object
+      properties:
+        company:
+          type: string
+        position:
+          type: string
+      example:
+        company: bex ltd
+        position: mobile developer
+    updatejobrequest:
+      title: updatejobrequest
+      required:
+        - company
+        - position
+      type: object
+      properties:
+        company:
+          type: string
+        position:
+          type: string
+      example:
+        company: doe ltd
+        position: backend developer
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+security: []
