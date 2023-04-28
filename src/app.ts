@@ -6,6 +6,7 @@ import xss from 'xss-clean';
 import helmet from 'helmet';
 import YAML from 'yamljs';
 import swaggerUI, { JsonObject } from 'swagger-ui-express';
+import compression from 'compression';
 import env from './env';
 import statusRoute from './routes/status.route';
 import authRoute from './routes/auth.route';
@@ -37,6 +38,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(cors());
 app.use(xss());
+app.use(compression());
 
 app.use('/', rootRoute);
 app.use('/status', statusRoute);
