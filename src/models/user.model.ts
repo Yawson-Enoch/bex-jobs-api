@@ -29,7 +29,6 @@ const userSchema = new Schema<IUser, TypeUserModel>(
       type: String,
       minLength: [6, 'Password must be 6 or more characters long'],
       required: [true, 'Password is required'],
-      select: false,
     },
   },
   {
