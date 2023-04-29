@@ -6,7 +6,7 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import env from '../env';
-import { CustomError } from '../errors';
+import { CustomAPIError } from '../errors';
 import { capitalizeFirstLetterOfWord } from '../lib/util';
 
 const errorMiddleware: ErrorRequestHandler = (
@@ -17,11 +17,11 @@ const errorMiddleware: ErrorRequestHandler = (
 ) => {
   const customError = {
     statusCode:
-      err instanceof CustomError
+      err instanceof CustomAPIError
         ? err.statusCode
         : StatusCodes.INTERNAL_SERVER_ERROR,
     msg:
-      err instanceof CustomError
+      err instanceof CustomAPIError
         ? err.message
         : 'Something went wrong, try again later',
   };

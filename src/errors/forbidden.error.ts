@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
-import CustomError from './custom.error';
+import CustomAPIError from './customAPI.error';
 
-export default class ForbiddenError extends CustomError {
+export default class ForbiddenError extends CustomAPIError {
   constructor(public message: string) {
     super(message, StatusCodes.FORBIDDEN);
     this.name = 'ForbiddenError';

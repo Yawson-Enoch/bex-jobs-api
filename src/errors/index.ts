@@ -1,11 +1,11 @@
-import CustomError from './custom.error';
+import CustomAPIError from './customAPI.error';
 import BadRequestError from './badRequest.error';
 import UnauthenticatedError from './unauthenticated.error';
 import NotFoundError from './notFound.error';
 import ForbiddenError from './forbidden.error';
 
 export {
-  CustomError,
+  CustomAPIError,
   BadRequestError,
   UnauthenticatedError,
   NotFoundError,
