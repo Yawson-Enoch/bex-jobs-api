@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import env from '../env';
-import { BadRequestError } from '../errors';
+import { UnauthenticatedError } from '../errors';
 import User from '../models/user.model';
 import { TypeLogin, TypeRegister } from '../schemas/auth.schema';
 
@@ -20,10 +20,11 @@ const login = async (
 ) => {
   const user = await User.findOne({ email: req.body.email });
 
-  if (!user) throw new BadRequestError('Invalid credentials');
+  if (!user) throw new UnauthenticatedError('Invalid credentials');
 
   const isAMatchingPassword = await user.comparePassword(req.body.password);
-  if (!isAMatchingPassword) throw new BadRequestError('Password is incorrect');
+  if (!isAMatchingPassword)
+    throw new UnauthenticatedError('Invalid credentials');
 
   const token = jwt.sign(
     { _id: user._id, username: user.username, email: user.email },
@@ -35,14 +36,7 @@ const login = async (
 
   res.status(StatusCodes.OK).json({
     msg: 'Login successful',
-    data: {
-      token,
-      userInfo: {
-        userId: user._id.toString(),
-        username: user.username,
-        email: user.email,
-      },
-    },
+    token,
   });
 };
 
