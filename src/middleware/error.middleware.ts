@@ -53,7 +53,7 @@ const errorMiddleware: ErrorRequestHandler = (
       if (issue.code === 'invalid_enum_value') {
         const options = (issue.options as any[]).join(', ');
         const message =
-          `The accepted values are for ${issue.path[0]} are ${options}`.toLowerCase();
+          `The accepted values for ${issue.path[0]} are ${options}`.toLowerCase();
         return `${capitalizeFirstLetterOfWord(message)}`;
       }
 
