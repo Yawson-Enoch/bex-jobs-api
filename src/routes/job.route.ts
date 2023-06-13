@@ -8,11 +8,7 @@ import {
   updateJob,
 } from '../controllers/job.controller';
 import requestValidatorMiddleware from '../middleware/requestValidator.middleware';
-import {
-  createJobSchema,
-  paramsSchema,
-  updateJobSchema,
-} from '../schemas/job.schema';
+import { jobSchema, jobParamsSchema } from '../schemas/job.schema';
 
 const router = Router();
 
@@ -20,7 +16,7 @@ router
   .route('/')
   .post(
     requestValidatorMiddleware({
-      body: createJobSchema,
+      body: jobSchema,
     }),
     createJob
   )
@@ -30,7 +26,7 @@ router
 router.use(
   '/:id',
   requestValidatorMiddleware({
-    params: paramsSchema,
+    params: jobParamsSchema,
   })
 );
 
@@ -39,7 +35,7 @@ router
   .get(getJob)
   .patch(
     requestValidatorMiddleware({
-      body: updateJobSchema,
+      body: jobSchema,
     }),
     updateJob
   )

@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { NotFoundError } from '../errors';
 import Job from '../models/job.model';
-import { TypeJob, TypeJobPartial, TypeParams } from '../schemas/job.schema';
+import type { Job as TJob, JobParams } from '../schemas/job.schema';
 
 const createJob = async (
-  req: Request<unknown, unknown, TypeJob>,
+  req: Request<unknown, unknown, TJob>,
   res: Response
 ) => {
   await Job.create({ ...req.body, createdBy: req.user._id });
@@ -21,7 +21,7 @@ const getAllJobs = async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json({ msg: 'Success', data: jobs });
 };
 
-const getJob = async (req: Request<TypeParams>, res: Response) => {
+const getJob = async (req: Request<JobParams>, res: Response) => {
   const job = await Job.findOne({
     createdBy: req.user._id,
     _id: req.params.id,
@@ -33,7 +33,7 @@ const getJob = async (req: Request<TypeParams>, res: Response) => {
 };
 
 const updateJob = async (
-  req: Request<TypeParams, unknown, TypeJobPartial>,
+  req: Request<JobParams, unknown, TJob>,
   res: Response
 ) => {
   const filter = {
@@ -61,7 +61,7 @@ const deleteAllJobs = async (req: Request, res: Response) => {
   res.status(StatusCodes.OK).json({ msg: 'All jobs deleted' });
 };
 
-const deleteJob = async (req: Request<TypeParams>, res: Response) => {
+const deleteJob = async (req: Request<JobParams>, res: Response) => {
   const job = await Job.findOneAndDelete({
     createdBy: req.user._id,
     _id: req.params.id,

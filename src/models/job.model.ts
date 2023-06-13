@@ -1,32 +1,43 @@
 import { model, Schema, Model, Types } from 'mongoose';
-import { TypeJob } from '../schemas/job.schema';
+import type { Job as TJob } from '../schemas/job.schema';
 
-type TypeJobExtended = TypeJob & {
+type JobExtended = TJob & {
   createdBy: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 };
 
-type TypeJobModel = Model<TypeJobExtended, Record<string, never>>;
+type JobModel = Model<JobExtended, Record<string, never>>;
 
-const jobSchema = new Schema<TypeJobExtended, TypeJobModel>(
+const jobSchema = new Schema<JobExtended, JobModel>(
   {
+    jobPosition: {
+      type: String,
+      required: [true, 'Please provide position'],
+      minlength: 2,
+      maxlength: 200,
+    },
     company: {
       type: String,
       required: [true, 'Please provide company name'],
       minlength: 2,
       maxlength: 100,
     },
-    position: {
+    jobLocation: {
       type: String,
       required: [true, 'Please provide position'],
       minlength: 2,
       maxlength: 200,
     },
-    status: {
+    jobStatus: {
       type: String,
       enum: ['pending', 'interview', 'declined'],
       default: 'pending',
+    },
+    jobType: {
+      type: String,
+      enum: ['full-time', 'part-time', 'remote', 'internship'],
+      default: 'full-time',
     },
     createdBy: {
       type: Schema.Types.ObjectId,
@@ -39,5 +50,5 @@ const jobSchema = new Schema<TypeJobExtended, TypeJobModel>(
   }
 );
 
-const Job = model<TypeJobExtended, TypeJobModel>('Job', jobSchema);
+const Job = model<JobExtended, JobModel>('Job', jobSchema);
 export default Job;
