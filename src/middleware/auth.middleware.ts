@@ -3,15 +3,13 @@ import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import env from '../env';
 import { UnauthenticatedError } from '../errors';
-import User from '../models/user.model';
+import User, { type TUser } from '../models/user.model';
 
-export interface IUser {
+export type UserAttachedToReqObject = Omit<TUser, 'password'> & {
   _id: Types.ObjectId;
-  username: string;
-  email: string;
-}
+};
 
-type TypeTokenInfo = jwt.JwtPayload & IUser;
+type TypeTokenInfo = jwt.JwtPayload & UserAttachedToReqObject;
 
 const authMiddleware = async (
   req: Request,
@@ -33,9 +31,9 @@ const authMiddleware = async (
   try {
     const decodedToken = jwt.verify(token, env.JWT_SECRET_KEY) as TypeTokenInfo;
 
-    const user = await User.findById<IUser>(decodedToken._id).select(
-      'username email'
-    );
+    const user = await User.findById<UserAttachedToReqObject>(
+      decodedToken._id
+    ).select('firstName lastName email');
 
     if (!user) {
       throw new UnauthenticatedError('Authentication error');

@@ -4,18 +4,18 @@ import jwt from 'jsonwebtoken';
 import env from '../env';
 import { UnauthenticatedError } from '../errors';
 import User from '../models/user.model';
-import { TypeLogin, TypeRegister } from '../schemas/auth.schema';
+import type { Login, Register } from '../schemas/auth.schema';
 
-const register = async (
-  req: Request<unknown, unknown, TypeRegister>,
+export const register = async (
+  req: Request<unknown, unknown, Register>,
   res: Response
 ) => {
   await User.create(req.body);
   res.status(StatusCodes.CREATED).json({ msg: 'User created successfully' });
 };
 
-const login = async (
-  req: Request<unknown, unknown, TypeLogin>,
+export const login = async (
+  req: Request<unknown, unknown, Login>,
   res: Response
 ) => {
   const user = await User.findOne({ email: req.body.email });
@@ -27,7 +27,12 @@ const login = async (
     throw new UnauthenticatedError('Invalid credentials');
 
   const token = jwt.sign(
-    { _id: user._id, username: user.username, email: user.email },
+    {
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+    },
     env.JWT_SECRET_KEY,
     {
       expiresIn: env.JWT_EXPIRY_DATE,
@@ -39,5 +44,3 @@ const login = async (
     token,
   });
 };
-
-export { login, register };

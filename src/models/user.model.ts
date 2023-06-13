@@ -1,24 +1,29 @@
 import { Model, Schema, model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import env from '../env';
+import type { Register } from '../schemas/auth.schema';
 
-interface IUser {
-  username: string;
-  email: string;
-  password: string;
+export type TUser = Omit<Register, 'passwordConfirm'>;
+
+type UserExtended = TUser & {
   createdAt: Date;
   updatedAt: Date;
   comparePassword(userPassword: string): Promise<boolean>;
-}
+};
 
-type TypeUserModel = Model<IUser, Record<string, never>>;
+type UserModel = Model<UserExtended, Record<string, never>>;
 
-const userSchema = new Schema<IUser, TypeUserModel>(
+const userSchema = new Schema<UserExtended, UserModel>(
   {
-    username: {
+    firstName: {
       type: String,
-      required: [true, 'Name is required'],
-      minLength: [2, 'Name must be 2 or more characters long'],
+      required: [true, 'First name is required'],
+      minLength: [2, 'First name must be 2 or more characters long'],
+    },
+    lastName: {
+      type: String,
+      required: [true, 'Last name is required'],
+      minLength: [2, 'Last name must be 2 or more characters long'],
     },
     email: {
       type: String,
@@ -51,6 +56,5 @@ userSchema.pre('save', async function () {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-const User = model<IUser, TypeUserModel>('User', userSchema);
-
+const User = model<UserExtended, UserModel>('User', userSchema);
 export default User;

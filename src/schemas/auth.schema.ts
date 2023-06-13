@@ -1,13 +1,20 @@
 import { z } from 'zod';
 
-const bodySchema = z.object({
-  username: z
+export const bodySchema = z.object({
+  firstName: z
     .string({
-      required_error: 'Name is required',
-      invalid_type_error: 'Name must be a string',
+      required_error: 'First name is required',
+      invalid_type_error: 'First name must be a string',
     })
     .trim()
-    .min(2, { message: 'Name must be 2 or more characters long' }),
+    .min(2, { message: 'First name must be 2 or more characters long' }),
+  lastName: z
+    .string({
+      required_error: 'Last name is required',
+      invalid_type_error: 'Last name must be a string',
+    })
+    .trim()
+    .min(2, { message: 'Last name must be 2 or more characters long' }),
   email: z
     .string({
       required_error: 'Email is required',
@@ -21,7 +28,7 @@ const bodySchema = z.object({
       invalid_type_error: 'Password must be a string',
     })
     .trim()
-    .min(6, { message: 'Password must be 6 or more characters long' }),
+    .min(8, { message: 'Password must be 8 or more characters long' }),
   passwordConfirm: z
     .string({
       required_error: 'Password confirmation value is required',
@@ -30,16 +37,18 @@ const bodySchema = z.object({
     .trim(),
 });
 
-const registerSchema = bodySchema.refine(
+export const registerSchema = bodySchema.refine(
   (data) => data.password === data.passwordConfirm,
   {
     message: 'Passwords do not match',
     path: ['passwordConfirm'],
   }
 );
-type TypeRegister = z.infer<typeof registerSchema>;
+export type Register = z.infer<typeof registerSchema>;
 
-const loginSchema = bodySchema.omit({ username: true, passwordConfirm: true });
-type TypeLogin = z.infer<typeof loginSchema>;
-
-export { registerSchema, loginSchema, TypeRegister, TypeLogin };
+export const loginSchema = bodySchema.omit({
+  firstName: true,
+  lastName: true,
+  passwordConfirm: true,
+});
+export type Login = z.infer<typeof loginSchema>;
