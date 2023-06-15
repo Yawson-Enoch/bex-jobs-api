@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const bodySchema = z.object({
+const authSchema = z.object({
   firstName: z
     .string({
       required_error: 'First name is required',
@@ -37,18 +37,26 @@ export const bodySchema = z.object({
     .trim(),
 });
 
-export const registerSchema = bodySchema.refine(
+const registerSchema = authSchema.refine(
   (data) => data.password === data.passwordConfirm,
   {
     message: 'Passwords do not match',
     path: ['passwordConfirm'],
   }
 );
-export type Register = z.infer<typeof registerSchema>;
+type Register = z.infer<typeof registerSchema>;
 
-export const loginSchema = bodySchema.omit({
+const loginSchema = authSchema.omit({
   firstName: true,
   lastName: true,
   passwordConfirm: true,
 });
-export type Login = z.infer<typeof loginSchema>;
+type Login = z.infer<typeof loginSchema>;
+
+const profileSchema = authSchema.omit({
+  password: true,
+  passwordConfirm: true,
+});
+type Profile = z.infer<typeof profileSchema>;
+
+export { registerSchema, Register, loginSchema, Login, profileSchema, Profile };

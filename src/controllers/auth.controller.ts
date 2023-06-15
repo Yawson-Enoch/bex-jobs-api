@@ -2,11 +2,11 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import env from '../env';
-import { UnauthenticatedError } from '../errors';
+import { NotFoundError, UnauthenticatedError } from '../errors';
 import User from '../models/user.model';
-import type { Login, Register } from '../schemas/auth.schema';
+import type { Login, Profile, Register } from '../schemas/auth.schema';
 
-export const register = async (
+const register = async (
   req: Request<unknown, unknown, Register>,
   res: Response
 ) => {
@@ -14,10 +14,7 @@ export const register = async (
   res.status(StatusCodes.CREATED).json({ msg: 'User created successfully' });
 };
 
-export const login = async (
-  req: Request<unknown, unknown, Login>,
-  res: Response
-) => {
+const login = async (req: Request<unknown, unknown, Login>, res: Response) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) throw new UnauthenticatedError('Invalid credentials');
@@ -44,3 +41,35 @@ export const login = async (
     token,
   });
 };
+
+const getUser = async (req: Request, res: Response) => {
+  const user = await User.findById(req.user._id).select('-password');
+
+  if (!user) throw new NotFoundError('No user found');
+
+  res.status(StatusCodes.OK).json({ msg: 'Success', user });
+};
+
+const updateUser = async (
+  req: Request<unknown, unknown, Profile>,
+  res: Response
+) => {
+  const filter = {
+    _id: req.user._id,
+  };
+
+  const update = req.body;
+
+  const options = {
+    new: true,
+    runValidators: true,
+  };
+
+  const user = await User.findByIdAndUpdate(filter, update, options);
+
+  if (!user) throw new NotFoundError('No user found');
+
+  res.status(StatusCodes.OK).json({ msg: 'User updated' });
+};
+
+export { register, login, getUser, updateUser };
