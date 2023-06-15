@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import {
   createJob,
-  deleteAllJobs,
+  deleteJobs,
   deleteJob,
-  getAllJobs,
+  getJobs,
   getJob,
   updateJob,
 } from '../controllers/job.controller';
@@ -20,18 +20,18 @@ router
     }),
     createJob
   )
-  .get(getAllJobs)
-  .delete(deleteAllJobs);
+  .get(getJobs)
+  .delete(deleteJobs);
 
 router.use(
-  '/:id',
+  '/:jobID',
   requestValidatorMiddleware({
     params: jobParamsSchema,
   })
 );
 
 router
-  .route('/:id')
+  .route('/:jobID')
   .get(getJob)
   .patch(
     requestValidatorMiddleware({

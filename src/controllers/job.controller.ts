@@ -13,23 +13,23 @@ const createJob = async (
   res.status(StatusCodes.CREATED).json({ msg: 'Job created' });
 };
 
-const getAllJobs = async (req: Request, res: Response) => {
+const getJobs = async (req: Request, res: Response) => {
   const jobs = await Job.find({ createdBy: req.user._id }).sort(
     '-updatedAt -createdAt'
   );
 
-  res.status(StatusCodes.OK).json({ msg: 'Success', data: jobs });
+  res.status(StatusCodes.OK).json({ msg: 'Success', jobs });
 };
 
 const getJob = async (req: Request<JobParams>, res: Response) => {
   const job = await Job.findOne({
     createdBy: req.user._id,
-    _id: req.params.id,
+    _id: req.params.jobID,
   });
 
-  if (!job) throw new NotFoundError(`No job with id: ${req.params.id}`);
+  if (!job) throw new NotFoundError(`No job with id: ${req.params.jobID}`);
 
-  res.status(StatusCodes.OK).json({ msg: 'Success', data: job });
+  res.status(StatusCodes.OK).json({ msg: 'Success', job });
 };
 
 const updateJob = async (
@@ -38,7 +38,7 @@ const updateJob = async (
 ) => {
   const filter = {
     createdBy: req.user._id,
-    _id: req.params.id,
+    _id: req.params.jobID,
   };
 
   const update = req.body;
@@ -50,12 +50,12 @@ const updateJob = async (
 
   const job = await Job.findOneAndUpdate(filter, update, options);
 
-  if (!job) throw new NotFoundError(`No job with id: ${req.params.id}`);
+  if (!job) throw new NotFoundError(`No job with id: ${req.params.jobID}`);
 
   res.status(StatusCodes.OK).json({ msg: 'Job updated' });
 };
 
-const deleteAllJobs = async (req: Request, res: Response) => {
+const deleteJobs = async (req: Request, res: Response) => {
   await Job.deleteMany({ createdBy: req.user._id });
 
   res.status(StatusCodes.OK).json({ msg: 'All jobs deleted' });
@@ -64,12 +64,12 @@ const deleteAllJobs = async (req: Request, res: Response) => {
 const deleteJob = async (req: Request<JobParams>, res: Response) => {
   const job = await Job.findOneAndDelete({
     createdBy: req.user._id,
-    _id: req.params.id,
+    _id: req.params.jobID,
   });
 
-  if (!job) throw new NotFoundError(`No job with id: ${req.params.id}`);
+  if (!job) throw new NotFoundError(`No job with id: ${req.params.jobID}`);
 
   res.status(StatusCodes.OK).json({ msg: 'Job deleted' });
 };
 
-export { createJob, getAllJobs, getJob, updateJob, deleteAllJobs, deleteJob };
+export { createJob, getJobs, getJob, updateJob, deleteJobs, deleteJob };

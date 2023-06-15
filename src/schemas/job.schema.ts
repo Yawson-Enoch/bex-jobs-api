@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const jobParamsSchema = z.object({
-  id: z.string({
+  jobID: z.string({
     required_error: 'Please provide route param',
     invalid_type_error: 'Param must be a string',
   }),
