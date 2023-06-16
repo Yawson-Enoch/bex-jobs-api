@@ -6,6 +6,7 @@ import {
   getJobs,
   getJob,
   updateJob,
+  showStats,
 } from '../controllers/job.controller';
 import requestValidatorMiddleware from '../middleware/requestValidator.middleware';
 import { jobSchema, jobParamsSchema } from '../schemas/job.schema';
@@ -22,6 +23,8 @@ router
   )
   .get(getJobs)
   .delete(deleteJobs);
+
+router.get('/stats', showStats);
 
 router.use(
   '/:jobID',

@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { NotFoundError } from '../errors';
@@ -72,4 +75,35 @@ const deleteJob = async (req: Request<JobParams>, res: Response) => {
   res.status(StatusCodes.OK).json({ msg: 'Job deleted' });
 };
 
-export { createJob, getJobs, getJob, updateJob, deleteJobs, deleteJob };
+const showStats = async (req: Request, res: Response) => {
+  const stats = await Job.aggregate([
+    { $match: { createdBy: req.user._id } },
+    { $group: { _id: '$jobStatus', count: { $sum: 1 } } },
+  ]);
+
+  const statsTransformed = stats.reduce((acc, curr) => {
+    const { _id: status, count } = curr;
+    acc[status] = count;
+    return acc;
+  }, {});
+
+  const statsWithDefaults = {
+    pending: statsTransformed.pending || 0,
+    interview: statsTransformed.interview || 0,
+    declined: statsTransformed.declined || 0,
+  };
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: 'Success', statusStats: statsWithDefaults });
+};
+
+export {
+  createJob,
+  getJobs,
+  getJob,
+  updateJob,
+  deleteJobs,
+  deleteJob,
+  showStats,
+};
