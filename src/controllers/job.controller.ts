@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -17,11 +19,68 @@ const createJob = async (
 };
 
 const getJobs = async (req: Request, res: Response) => {
-  const jobs = await Job.find({ createdBy: req.user._id }).sort(
-    '-updatedAt -createdAt'
-  );
+  const { sort, search, status, type } = req.query;
 
-  res.status(StatusCodes.OK).json({ msg: 'Success', jobs });
+  const queryObject: Record<string, any> = {
+    createdBy: req.user._id,
+  };
+
+  if (status && status !== 'all') {
+    queryObject.jobStatus = status;
+  }
+  if (type && type !== 'all') {
+    queryObject.jobType = type;
+  }
+  if (search) {
+    queryObject.$or = [
+      { company: { $regex: search, $options: 'i' } },
+      { jobLocation: { $regex: search, $options: 'i' } },
+      { jobPosition: { $regex: search, $options: 'i' } },
+    ];
+  }
+
+  let result = Job.find(queryObject);
+
+  if (sort === 'latest') {
+    result = result.sort('-createdAt -updatedAt');
+  }
+  if (sort === 'oldest') {
+    result = result.sort('createdAt updatedAt');
+  }
+  if (sort === 'a-z') {
+    result = result.sort('company jobLocation jobPosition');
+  }
+  if (sort === 'z-a') {
+    result = result.sort('-company -jobLocation -jobPosition');
+  }
+
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  result = result.skip(skip).limit(limit);
+
+  const jobs = await result;
+
+  const totalNumberOfJobs = await Job.countDocuments(queryObject);
+  const totalNumberOfPages = Math.ceil(totalNumberOfJobs / limit);
+  const nextPage = page * limit < totalNumberOfJobs ? page + 1 : null;
+  const prevPage = page > 1 ? page - 1 : null;
+
+  const paginatedData = {
+    totalNumberOfJobs,
+    currentPageJobs: jobs,
+    totalNumberOfJobsOnCurrPage: jobs.length,
+    resultsPerPage: limit,
+    totalNumberOfPages,
+    currentPageNumber: page,
+    prevPageNumber: prevPage,
+    nextPageNumber: nextPage,
+  };
+
+  res.status(200).json({
+    msg: 'Success',
+    paginatedData,
+  });
 };
 
 const getJob = async (req: Request<JobParams>, res: Response) => {
@@ -93,9 +152,43 @@ const showStats = async (req: Request, res: Response) => {
     declined: statsTransformed.declined || 0,
   };
 
-  res
-    .status(StatusCodes.OK)
-    .json({ msg: 'Success', statusStats: statsWithDefaults });
+  const monthlyApplications = await Job.aggregate([
+    { $match: { createdBy: req.user._id } },
+    {
+      $group: {
+        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { '_id.year': -1, '_id.month': -1 } },
+    { $limit: 6 },
+  ]);
+
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    year: 'numeric',
+  });
+
+  const monthlyApplicationsFormatted = monthlyApplications
+    .map((item) => {
+      const {
+        _id: { year, month },
+        count,
+      } = item;
+
+      const formattedDate = formatter.format(
+        new Date(year as number, month - 1)
+      );
+
+      return { date: formattedDate, count };
+    })
+    .reverse();
+
+  res.status(StatusCodes.OK).json({
+    msg: 'Success',
+    statusStats: statsWithDefaults,
+    monthlyApplications: monthlyApplicationsFormatted,
+  });
 };
 
 export {

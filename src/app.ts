@@ -16,7 +16,6 @@ import errorMiddleware from './middleware/error.middleware';
 import routeNotFoundMiddleware from './middleware/routeNotFound.middleware';
 import connectDb from './lib/connectDb';
 import authMiddleware from './middleware/auth.middleware';
-import apiLimiter from './lib/rateLimiter';
 
 process.on('uncaughtException', (err) => {
   console.error({ errorName: err.name, errorMessage: err.message });
@@ -30,7 +29,7 @@ const swaggerDocument = YAML.load(
 
 const app = express();
 
-app.use(apiLimiter);
+// app.use(apiLimiter);
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.urlencoded({ extended: false }));
