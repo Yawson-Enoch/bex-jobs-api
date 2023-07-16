@@ -59,4 +59,15 @@ const profileSchema = authSchema.omit({
 });
 type Profile = z.infer<typeof profileSchema>;
 
-export { registerSchema, Register, loginSchema, Login, profileSchema, Profile };
+const updateProfileSchema = profileSchema.partial();
+type UpdateProfile = z.infer<typeof updateProfileSchema>;
+export {
+  registerSchema,
+  Register,
+  loginSchema,
+  Login,
+  profileSchema,
+  Profile,
+  updateProfileSchema,
+  UpdateProfile,
+};

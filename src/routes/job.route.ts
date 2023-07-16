@@ -9,6 +9,7 @@ import {
   showStats,
 } from '../controllers/job.controller';
 import requestValidatorMiddleware from '../middleware/requestValidator.middleware';
+import testUserMiddleware from '../middleware/testUser.middleware';
 import { jobSchema, jobParamsSchema } from '../schemas/job.schema';
 
 const router = Router();
@@ -16,13 +17,16 @@ const router = Router();
 router
   .route('/')
   .post(
-    requestValidatorMiddleware({
-      body: jobSchema,
-    }),
+    [
+      requestValidatorMiddleware({
+        body: jobSchema,
+      }),
+      testUserMiddleware,
+    ],
     createJob
   )
   .get(getJobs)
-  .delete(deleteJobs);
+  .delete(testUserMiddleware, deleteJobs);
 
 router.get('/stats', showStats);
 
@@ -37,11 +41,14 @@ router
   .route('/:jobID')
   .get(getJob)
   .patch(
-    requestValidatorMiddleware({
-      body: jobSchema,
-    }),
+    [
+      requestValidatorMiddleware({
+        body: jobSchema,
+      }),
+      testUserMiddleware,
+    ],
     updateJob
   )
-  .delete(deleteJob);
+  .delete(testUserMiddleware, deleteJob);
 
 export default router;

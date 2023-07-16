@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import env from '../env';
 import { NotFoundError, UnauthenticatedError } from '../errors';
 import User from '../models/user.model';
-import type { Login, Profile, Register } from '../schemas/auth.schema';
+import type { Login, Register, UpdateProfile } from '../schemas/auth.schema';
 
 const register = async (
   req: Request<unknown, unknown, Register>,
@@ -51,7 +51,7 @@ const getUser = async (req: Request, res: Response) => {
 };
 
 const updateUser = async (
-  req: Request<unknown, unknown, Profile>,
+  req: Request<unknown, unknown, UpdateProfile>,
   res: Response
 ) => {
   const filter = {

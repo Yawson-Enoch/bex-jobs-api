@@ -7,10 +7,11 @@ import {
 } from '../controllers/auth.controller';
 import authMiddleware from '../middleware/auth.middleware';
 import requestValidatorMiddleware from '../middleware/requestValidator.middleware';
+import testUserMiddleware from '../middleware/testUser.middleware';
 import {
   loginSchema,
-  profileSchema,
   registerSchema,
+  updateProfileSchema,
 } from '../schemas/auth.schema';
 
 const router = Router();
@@ -38,8 +39,9 @@ router.patch(
   [
     authMiddleware,
     requestValidatorMiddleware({
-      body: profileSchema,
+      body: updateProfileSchema,
     }),
+    testUserMiddleware,
   ],
   updateUser
 );
