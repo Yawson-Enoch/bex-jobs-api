@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import env from '../env';
@@ -13,8 +13,8 @@ type TypeTokenInfo = jwt.JwtPayload & UserAttachedToReqObject;
 
 const authMiddleware = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  _: Response,
+  next: NextFunction,
 ) => {
   const authHeader = req.headers.authorization;
 
@@ -28,21 +28,22 @@ const authMiddleware = async (
 
   const token = authHeader.split(' ')[1];
 
-  try {
-    const decodedToken = jwt.verify(token, env.JWT_SECRET_KEY) as TypeTokenInfo;
-
-    const user = await User.findById<UserAttachedToReqObject>(
-      decodedToken._id
-    ).select('firstName lastName email');
-
-    if (!user) {
-      throw new UnauthenticatedError('Authentication error');
-    }
-
-    req.user = user;
-  } catch (error) {
+  if (!token) {
     throw new UnauthenticatedError('Authentication error');
   }
+
+  const decodedToken = jwt.verify(token, env.JWT_SECRET_KEY) as TypeTokenInfo;
+
+  const user = await User.findById<UserAttachedToReqObject>(
+    decodedToken._id,
+  ).select('firstName lastName email');
+
+  if (!user) {
+    throw new UnauthenticatedError('Authentication error');
+  }
+
+  req.user = user;
+
   next();
 };
 

@@ -1,19 +1,21 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable unused-imports/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Error as MongooseError } from 'mongoose';
+import { ZodError } from 'zod';
 import env from '../env';
 import { CustomAPIError } from '../errors';
 import { capitalizeFirstLetterOfWord } from '../lib/util';
 
-const errorMiddleware: ErrorRequestHandler = (
-  err: any,
-  req: Request,
+interface AppError extends CustomAPIError {
+  code?: number;
+  keyValue?: Record<string, unknown>;
+}
+
+const errorMiddleware = (
+  err: AppError,
+  _: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const customError = {
     statusCode:
@@ -25,55 +27,61 @@ const errorMiddleware: ErrorRequestHandler = (
         ? err.message
         : 'Something went wrong, try again later',
   };
-
-  if (err.name === 'CastError') {
+  /* invalid mongoDB id */
+  if (err instanceof MongooseError.CastError) {
     const message = `Invalid ${err.path}: ${err.value}`;
     customError.msg = message;
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
+  /* duplicate unique key error 
+  - eg: user signing up with same email as another user
+  */
   if (err.name === 'MongoServerError' && err.code === 11000) {
     const errTexts: string[] = Object.keys(err.keyValue as object);
-    const validationError = errTexts.map((text: string) => text)[0];
+    const validationError = errTexts.map((text: string) => text)[0] as string;
     const message = `${capitalizeFirstLetterOfWord(
-      validationError
+      validationError,
     )} already exists, please use another ${validationError}`;
     customError.msg = message;
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
-  if (err.name === 'ValidationError') {
-    const validationErrors = Object.values(
-      err.errors as { [s: string]: unknown } | ArrayLike<unknown>
-    ).map((validationError: any) => validationError.message as string);
+  /* missing required fields - here to catch ones just incase zod fails */
+  if (err instanceof MongooseError.ValidationError) {
+    const validationErrors = Object.values(err.errors).map(
+      (validationError) => validationError.message,
+    );
     const message = `Invalid input data. ${validationErrors.join('. ')}`;
     customError.msg = message;
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
-  if (err.name === 'ZodError') {
-    const validationErrors = (err.issues as any[]).map((issue: any) => {
+  /* zod errors */
+  if (err instanceof ZodError) {
+    const validationErrors = err.issues.map((issue) => {
       if (issue.code === 'invalid_enum_value') {
-        const options = (issue.options as any[]).join(', ');
+        const options = issue.options.join(', ');
         const message =
           `The accepted values for ${issue.path[0]} are ${options}`.toLowerCase();
         return `${capitalizeFirstLetterOfWord(message)}`;
       }
 
-      return `${capitalizeFirstLetterOfWord(
-        (issue.message as string).toLowerCase()
-      )}`;
+      return `${capitalizeFirstLetterOfWord(issue.message.toLowerCase())}`;
     });
-    const message = `Invalid input data. ${validationErrors.join('. ')}`;
+    const message = validationErrors.join('. ');
     customError.msg = message;
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 
   if (env.isProduction) {
-    return res.status(customError.statusCode).json({ msg: customError.msg });
+    res.status(customError.statusCode).json({ msg: customError.msg });
+  } else {
+    res.status(customError.statusCode).json({
+      name: err.name,
+      msg: customError.msg,
+      error: err,
+      stack: err.stack,
+    });
   }
-  return res.status(customError.statusCode).json({
-    name: err.name,
-    msg: customError.msg,
-    error: err,
-    stack: err.stack,
-  });
+
+  next();
 };
 export default errorMiddleware;

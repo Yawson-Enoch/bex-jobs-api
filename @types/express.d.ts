@@ -1,4 +1,4 @@
-import { UserAttachedToReqObject } from '../middleware/auth.middleware';
+import { UserAttachedToReqObject } from '../src/middleware/auth.middleware';
 
 declare global {
   namespace Express {

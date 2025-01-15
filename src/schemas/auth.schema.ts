@@ -42,7 +42,7 @@ const registerSchema = authSchema.refine(
   {
     message: 'Passwords do not match',
     path: ['passwordConfirm'],
-  }
+  },
 );
 type Register = z.infer<typeof registerSchema>;
 
@@ -63,11 +63,11 @@ const updateProfileSchema = profileSchema.partial();
 type UpdateProfile = z.infer<typeof updateProfileSchema>;
 export {
   registerSchema,
-  Register,
+  type Register,
   loginSchema,
-  Login,
+  type Login,
   profileSchema,
-  Profile,
+  type Profile,
   updateProfileSchema,
-  UpdateProfile,
+  type UpdateProfile,
 };

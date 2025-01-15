@@ -1,16 +1,16 @@
 import { Router } from 'express';
 import {
   createJob,
-  deleteJobs,
   deleteJob,
-  getJobs,
+  deleteJobs,
   getJob,
-  updateJob,
+  getJobs,
   showStats,
+  updateJob,
 } from '../controllers/job.controller';
 import requestValidatorMiddleware from '../middleware/requestValidator.middleware';
 import testUserMiddleware from '../middleware/testUser.middleware';
-import { jobSchema, jobParamsSchema } from '../schemas/job.schema';
+import { jobParamsSchema, jobSchema } from '../schemas/job.schema';
 
 const router = Router();
 
@@ -23,7 +23,7 @@ router
       }),
       testUserMiddleware,
     ],
-    createJob
+    createJob,
   )
   .get(getJobs)
   .delete(testUserMiddleware, deleteJobs);
@@ -34,7 +34,7 @@ router.use(
   '/:jobID',
   requestValidatorMiddleware({
     params: jobParamsSchema,
-  })
+  }),
 );
 
 router
@@ -47,7 +47,7 @@ router
       }),
       testUserMiddleware,
     ],
-    updateJob
+    updateJob,
   )
   .delete(testUserMiddleware, deleteJob);
 

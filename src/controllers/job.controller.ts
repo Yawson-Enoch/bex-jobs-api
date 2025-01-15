@@ -1,17 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { NotFoundError } from '../errors';
 import Job from '../models/job.model';
-import type { Job as TJob, JobParams } from '../schemas/job.schema';
+import type { JobParams, Job as TJob } from '../schemas/job.schema';
 
 const createJob = async (
   req: Request<unknown, unknown, TJob>,
-  res: Response
+  res: Response,
 ) => {
   await Job.create({ ...req.body, createdBy: req.user._id });
 
@@ -21,7 +16,7 @@ const createJob = async (
 const getJobs = async (req: Request, res: Response) => {
   const { sort, search, status, type } = req.query;
 
-  const queryObject: Record<string, any> = {
+  const queryObject: Record<string, unknown> = {
     createdBy: req.user._id,
   };
 
@@ -96,7 +91,7 @@ const getJob = async (req: Request<JobParams>, res: Response) => {
 
 const updateJob = async (
   req: Request<JobParams, unknown, TJob>,
-  res: Response
+  res: Response,
 ) => {
   const filter = {
     createdBy: req.user._id,
@@ -135,24 +130,31 @@ const deleteJob = async (req: Request<JobParams>, res: Response) => {
 };
 
 const showStats = async (req: Request, res: Response) => {
-  const stats = await Job.aggregate([
+  const stats = (await Job.aggregate([
     { $match: { createdBy: req.user._id } },
     { $group: { _id: '$jobStatus', count: { $sum: 1 } } },
-  ]);
+  ])) as unknown as { _id: TJob['jobStatus']; count: number }[];
 
-  const statsTransformed = stats.reduce((acc, curr) => {
-    const { _id: status, count } = curr;
-    acc[status] = count;
-    return acc;
-  }, {});
+  const statsTransformed = stats.reduce(
+    (acc, curr) => {
+      const { _id: status, count } = curr;
+      acc[status] = count;
+      return acc;
+    },
+    {
+      pending: 0,
+      interview: 0,
+      declined: 0,
+    },
+  );
 
   const statsWithDefaults = {
-    pending: statsTransformed.pending || 0,
-    interview: statsTransformed.interview || 0,
-    declined: statsTransformed.declined || 0,
+    pending: statsTransformed.pending,
+    interview: statsTransformed.interview,
+    declined: statsTransformed.declined,
   };
 
-  const monthlyApplications = await Job.aggregate([
+  const monthlyApplications = (await Job.aggregate([
     { $match: { createdBy: req.user._id } },
     {
       $group: {
@@ -162,7 +164,7 @@ const showStats = async (req: Request, res: Response) => {
     },
     { $sort: { '_id.year': -1, '_id.month': -1 } },
     { $limit: 6 },
-  ]);
+  ])) as unknown as { _id: { year: number; month: number }; count: number }[];
 
   const formatter = new Intl.DateTimeFormat('en-US', {
     month: 'short',
@@ -176,9 +178,7 @@ const showStats = async (req: Request, res: Response) => {
         count,
       } = item;
 
-      const formattedDate = formatter.format(
-        new Date(year as number, month - 1)
-      );
+      const formattedDate = formatter.format(new Date(year, month - 1));
 
       return { date: formattedDate, count };
     })

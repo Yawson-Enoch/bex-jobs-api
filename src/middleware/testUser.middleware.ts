@@ -1,11 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { ForbiddenError } from '../errors';
 
-const testUserMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const testUserMiddleware = (req: Request, _: Response, next: NextFunction) => {
   const isTestUser = req.user._id.toString() === '64b42af1b57a900bcb39a601';
 
   if (isTestUser) {

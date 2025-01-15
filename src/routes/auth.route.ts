@@ -21,7 +21,7 @@ router.post(
   requestValidatorMiddleware({
     body: registerSchema,
   }),
-  register
+  register,
 );
 
 router.post(
@@ -29,7 +29,7 @@ router.post(
   requestValidatorMiddleware({
     body: loginSchema,
   }),
-  login
+  login,
 );
 
 router.get('/get-user', authMiddleware, getUser);
@@ -43,7 +43,7 @@ router.patch(
     }),
     testUserMiddleware,
   ],
-  updateUser
+  updateUser,
 );
 
 export default router;

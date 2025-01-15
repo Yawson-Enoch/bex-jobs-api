@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject, ZodEffects } from 'zod';
+import type { NextFunction, Request, Response } from 'express';
+import type { AnyZodObject, ZodEffects } from 'zod';
 
 interface IValidators {
   body?: AnyZodObject | ZodEffects<AnyZodObject>;
@@ -11,8 +11,8 @@ const requestValidatorMiddleware =
   (validators: IValidators) =>
   async (
     req: Request<unknown, unknown, unknown>,
-    res: Response,
-    next: NextFunction
+    _: Response,
+    next: NextFunction,
   ) => {
     if (validators.params) {
       req.params = await validators.params.parseAsync(req.params);

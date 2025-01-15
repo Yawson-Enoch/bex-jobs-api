@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import env from '../env';
@@ -8,7 +8,7 @@ import type { Login, Register, UpdateProfile } from '../schemas/auth.schema';
 
 const register = async (
   req: Request<unknown, unknown, Register>,
-  res: Response
+  res: Response,
 ) => {
   await User.create(req.body);
   res.status(StatusCodes.CREATED).json({ msg: 'User created successfully' });
@@ -33,7 +33,7 @@ const login = async (req: Request<unknown, unknown, Login>, res: Response) => {
     env.JWT_SECRET_KEY,
     {
       expiresIn: env.JWT_EXPIRY_DATE,
-    }
+    },
   );
 
   res.status(StatusCodes.OK).json({
@@ -52,7 +52,7 @@ const getUser = async (req: Request, res: Response) => {
 
 const updateUser = async (
   req: Request<unknown, unknown, UpdateProfile>,
-  res: Response
+  res: Response,
 ) => {
   const filter = {
     _id: req.user._id,

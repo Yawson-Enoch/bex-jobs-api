@@ -1,7 +1,10 @@
 export default class CustomAPIError extends Error {
   isOperational: boolean;
 
-  constructor(public message: string, public statusCode: number) {
+  constructor(
+    public message: string,
+    public statusCode: number,
+  ) {
     super(message);
     this.isOperational = true;
     this.statusCode = statusCode;

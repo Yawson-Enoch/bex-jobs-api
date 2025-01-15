@@ -1,5 +1,5 @@
-import { Model, Schema, model } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { Model, model, Schema } from 'mongoose';
 import env from '../env';
 import type { Register } from '../schemas/auth.schema';
 
@@ -41,16 +41,15 @@ const userSchema = new Schema<UserExtended, UserModel>(
       async comparePassword(userPassword: string) {
         const isAMatchingPassword = await bcrypt.compare(
           userPassword,
-          this.password
+          this.password,
         );
         return isAMatchingPassword;
       },
     },
     timestamps: true,
-  }
+  },
 );
 
-// eslint-disable-next-line func-names
 userSchema.pre('save', async function () {
   const salt = await bcrypt.genSalt(env.PSWD_SALT);
   this.password = await bcrypt.hash(this.password, salt);

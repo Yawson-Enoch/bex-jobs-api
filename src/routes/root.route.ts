@@ -1,9 +1,9 @@
-import { Router, Request, Response } from 'express';
 import path from 'path';
+import { Router, type Request, type Response } from 'express';
 
 const router = Router();
 
-router.get(['/', '/index.html'], (req: Request, res: Response) => {
+router.get(['/', '/index.html'], (_: Request, res: Response) => {
   res.sendFile(path.resolve(__dirname, '..', 'public', 'index.html'));
 });
 

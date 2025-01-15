@@ -1,4 +1,4 @@
-import { model, Schema, Model, Types } from 'mongoose';
+import { model, Model, Schema, Types } from 'mongoose';
 import type { Job as TJob } from '../schemas/job.schema';
 
 type JobExtended = TJob & {
@@ -47,7 +47,7 @@ const jobSchema = new Schema<JobExtended, JobModel>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Job = model<JobExtended, JobModel>('Job', jobSchema);
