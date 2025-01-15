@@ -36,10 +36,10 @@ app.use(helmet());
 app.use(cors());
 
 app.use('/', rootRoute);
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 app.use('/status', statusRoute);
 app.use('/api/v1/auth', authRoute);
 app.use('/api/v1/jobs', authMiddleware, jobRoute);
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 app.use(routeNotFoundMiddleware);
 app.use(errorMiddleware);
