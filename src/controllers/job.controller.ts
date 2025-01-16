@@ -31,6 +31,8 @@ const getJobs = async (req: Request, res: Response) => {
       { company: { $regex: search, $options: 'i' } },
       { jobLocation: { $regex: search, $options: 'i' } },
       { jobPosition: { $regex: search, $options: 'i' } },
+      { jobType: { $regex: search, $options: 'i' } },
+      { jobStatus: { $regex: search, $options: 'i' } },
     ];
   }
 
@@ -43,10 +45,10 @@ const getJobs = async (req: Request, res: Response) => {
     result = result.sort('createdAt updatedAt');
   }
   if (sort === 'a-z') {
-    result = result.sort('company jobLocation jobPosition');
+    result = result.sort('jobPosition company jobLocation');
   }
   if (sort === 'z-a') {
-    result = result.sort('-company -jobLocation -jobPosition');
+    result = result.sort('-jobPosition -company -jobLocation');
   }
 
   const page = Number(req.query.page) || 1;
