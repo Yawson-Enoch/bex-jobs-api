@@ -58,25 +58,26 @@ const getJobs = async (req: Request, res: Response) => {
 
   const jobs = await result;
 
-  const totalNumberOfJobs = await Job.countDocuments(queryObject);
-  const totalNumberOfPages = Math.ceil(totalNumberOfJobs / limit);
-  const nextPage = page * limit < totalNumberOfJobs ? page + 1 : null;
+  /* based on query */
+  const totalNumberOfJobsBasedOnQuery = await Job.countDocuments(queryObject);
+  const totalNumberOfPagesBasedOnQuery = Math.ceil(
+    totalNumberOfJobsBasedOnQuery / limit,
+  );
+  const nextPage =
+    page * limit < totalNumberOfPagesBasedOnQuery ? page + 1 : null;
   const prevPage = page > 1 ? page - 1 : null;
-
-  const paginatedData = {
-    totalNumberOfJobs,
-    currentPageJobs: jobs,
-    totalNumberOfJobsOnCurrPage: jobs.length,
-    resultsPerPage: limit,
-    totalNumberOfPages,
-    currentPageNumber: page,
-    prevPageNumber: prevPage,
-    nextPageNumber: nextPage,
-  };
 
   res.status(200).json({
     msg: 'Success',
-    paginatedData,
+    data: jobs,
+    pagination: {
+      totalJobs: totalNumberOfJobsBasedOnQuery,
+      totalPages: totalNumberOfPagesBasedOnQuery,
+      perPage: limit,
+      currentPage: page,
+      nextPage: nextPage,
+      prevPage: prevPage,
+    },
   });
 };
 
@@ -88,7 +89,7 @@ const getJob = async (req: Request<JobParams>, res: Response) => {
 
   if (!job) throw new NotFoundError(`No job with id: ${req.params.jobID}`);
 
-  res.status(StatusCodes.OK).json({ msg: 'Success', job });
+  res.status(StatusCodes.OK).json({ msg: 'Success', data: job });
 };
 
 const updateJob = async (
@@ -137,7 +138,7 @@ const showStats = async (req: Request, res: Response) => {
     { $group: { _id: '$jobStatus', count: { $sum: 1 } } },
   ])) as unknown as { _id: TJob['jobStatus']; count: number }[];
 
-  const statsTransformed = stats.reduce(
+  const statsByJobStatus = stats.reduce(
     (acc, curr) => {
       const { _id: status, count } = curr;
       acc[status] = count;
@@ -149,12 +150,6 @@ const showStats = async (req: Request, res: Response) => {
       declined: 0,
     },
   );
-
-  const statsWithDefaults = {
-    pending: statsTransformed.pending,
-    interview: statsTransformed.interview,
-    declined: statsTransformed.declined,
-  };
 
   const monthlyApplications = (await Job.aggregate([
     { $match: { createdBy: req.user._id } },
@@ -168,11 +163,6 @@ const showStats = async (req: Request, res: Response) => {
     { $limit: 6 },
   ])) as unknown as { _id: { year: number; month: number }; count: number }[];
 
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    year: 'numeric',
-  });
-
   const monthlyApplicationsFormatted = monthlyApplications
     .map((item) => {
       const {
@@ -180,16 +170,23 @@ const showStats = async (req: Request, res: Response) => {
         count,
       } = item;
 
-      const formattedDate = formatter.format(new Date(year, month - 1));
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        year: 'numeric',
+      });
 
-      return { date: formattedDate, count };
+      const date = formatter.format(new Date(year, month - 1));
+
+      return { date, count };
     })
     .reverse();
 
   res.status(StatusCodes.OK).json({
     msg: 'Success',
-    statusStats: statsWithDefaults,
-    monthlyApplications: monthlyApplicationsFormatted,
+    data: {
+      jobStatusStats: statsByJobStatus,
+      monthlyApplications: monthlyApplicationsFormatted,
+    },
   });
 };
 

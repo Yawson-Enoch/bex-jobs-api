@@ -38,7 +38,9 @@ const login = async (req: Request<unknown, unknown, Login>, res: Response) => {
 
   res.status(StatusCodes.OK).json({
     msg: 'Login successful',
-    token,
+    data: {
+      token,
+    },
   });
 };
 
@@ -47,7 +49,7 @@ const getUser = async (req: Request, res: Response) => {
 
   if (!user) throw new NotFoundError('No user found');
 
-  res.status(StatusCodes.OK).json({ msg: 'Success', user });
+  res.status(StatusCodes.OK).json({ msg: 'Success', data: user });
 };
 
 const updateUser = async (
