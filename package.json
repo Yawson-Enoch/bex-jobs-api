@@ -12,10 +12,10 @@
     "dev:node": "node --watch dist/app.cjs",
     "lint": "eslint",
     "format": "prettier --check --ignore-unknown .",
-    "fix": "pnpm /fix:/",
-    "fix:format": "prettier --write --ignore-unknown .",
-    "fix:lint": "eslint --fix",
     "fix:types": "tsc",
+    "fix:lint": "eslint --fix",
+    "fix:format": "prettier --write --ignore-unknown .",
+    "fix": "pnpm fix:types && pnpm fix:lint && pnpm fix:format",
     "seed": "tsx src/auto-populate.ts",
     "prepare": "husky"
   },
@@ -38,8 +38,6 @@
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
-    "swagger-ui-express": "^5.0.1",
-    "yamljs": "^0.3.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -50,8 +48,6 @@
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.10.6",
-    "@types/swagger-ui-express": "^4.1.7",
-    "@types/yamljs": "^0.2.34",
     "esbuild": "^0.24.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
