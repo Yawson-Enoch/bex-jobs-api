@@ -50,9 +50,10 @@ const userSchema = new Schema<UserExtended, UserModel>(
   },
 );
 
-userSchema.pre('save', async function () {
+userSchema.pre('save', async function (next) {
   const salt = await bcrypt.genSalt(env.PSWD_SALT);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 const User = model<UserExtended, UserModel>('User', userSchema);
