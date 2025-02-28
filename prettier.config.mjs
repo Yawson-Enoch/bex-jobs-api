@@ -4,4 +4,6 @@ export default {
   semi: true,
 
   plugins: ['@ianvs/prettier-plugin-sort-imports'],
+
+  importOrder: ['<THIRD_PARTY_MODULES>', '', '^@/(.*)$', '', '^[.]'],
 };

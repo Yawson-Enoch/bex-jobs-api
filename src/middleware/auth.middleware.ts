@@ -1,15 +1,12 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { Types } from 'mongoose';
-import env from '../env';
-import { UnauthenticatedError } from '../errors';
-import User, { type TUser } from '../models/user.model';
 
-export type UserAttachedToReqObject = Omit<TUser, 'password'> & {
-  _id: Types.ObjectId;
-};
+import env from '@/env';
+import { UnauthenticatedError } from '@/errors';
+import prisma from '@/prisma/prisma-client';
+import type { AuthUser } from '@/types/auth-user';
 
-type TypeTokenInfo = jwt.JwtPayload & UserAttachedToReqObject;
+type TypeTokenInfo = jwt.JwtPayload & AuthUser;
 
 const authMiddleware = async (
   req: Request,
@@ -34,9 +31,15 @@ const authMiddleware = async (
 
   const decodedToken = jwt.verify(token, env.JWT_SECRET_KEY) as TypeTokenInfo;
 
-  const user = await User.findById<UserAttachedToReqObject>(
-    decodedToken._id,
-  ).select('firstName lastName email');
+  const user = await prisma.user.findUnique({
+    where: {
+      id: decodedToken.id,
+    },
+    select: {
+      id: true,
+      email: true,
+    },
+  });
 
   if (!user) {
     throw new UnauthenticatedError('Authentication error');

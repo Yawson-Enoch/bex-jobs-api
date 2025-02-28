@@ -1,18 +1,19 @@
 import { Router } from 'express';
+
 import {
   getUser,
   login,
   register,
   updateUser,
-} from '../controllers/auth.controller';
-import authMiddleware from '../middleware/auth.middleware';
-import requestValidatorMiddleware from '../middleware/requestValidator.middleware';
-import testUserMiddleware from '../middleware/testUser.middleware';
+} from '@/controllers/auth.controller';
+import authMiddleware from '@/middleware/auth.middleware';
+import requestValidatorMiddleware from '@/middleware/requestValidator.middleware';
+import testUserMiddleware from '@/middleware/testUser.middleware';
 import {
   loginSchema,
   registerSchema,
   updateProfileSchema,
-} from '../schemas/auth.schema';
+} from '@/schemas/auth.schema';
 
 const router = Router();
 
@@ -32,10 +33,10 @@ router.post(
   login,
 );
 
-router.get('/get-user', authMiddleware, getUser);
+router.get('/profile', authMiddleware, getUser);
 
 router.patch(
-  '/update-user',
+  '/profile',
   [
     authMiddleware,
     requestValidatorMiddleware({

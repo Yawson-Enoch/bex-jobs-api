@@ -56,6 +56,7 @@ type Login = z.infer<typeof loginSchema>;
 const profileSchema = authSchema.omit({
   password: true,
   passwordConfirm: true,
+  email: true,
 });
 type Profile = z.infer<typeof profileSchema>;
 
