@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { NotFoundError } from '@/errors';
+import type { JOB_STATUS_OPTIONS } from '@/lib/constants';
 import prisma from '@/prisma/prisma-client';
 import type { JobParams, Job as TJob } from '@/schemas/job.schema';
 
@@ -160,7 +161,7 @@ const showStats = async (req: Request, res: Response) => {
 
   const statsByJobStatus = stats.reduce(
     (acc, curr) => {
-      acc[curr.jobStatus as 'pending' | 'declined' | 'interview'] =
+      acc[curr.jobStatus as (typeof JOB_STATUS_OPTIONS)[number]] =
         curr._count.jobStatus;
       return acc;
     },
