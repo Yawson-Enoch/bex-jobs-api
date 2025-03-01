@@ -4,22 +4,24 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 /** @type {import('eslint').Linter.Config[]} */
-export default [
-  { files: ['**/*.ts'] },
+export default tseslint.config(
   { ignores: ['**/dist/'] },
-  { languageOptions: { globals: globals.node } },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
   {
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
+    extends: [
+      eslint.configs.recommended,
+      ...tseslint.configs.recommended,
+      eslintConfigPrettier,
+    ],
+    files: ['**/*.ts'],
+    languageOptions: { globals: globals.node },
     rules: {
-      '@typescript-eslint/no-misused-promises': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+        },
+      ],
     },
   },
-  eslintConfigPrettier,
-];
+);

@@ -1,4 +1,4 @@
-# JOBS API
+# BEXJOBS API
 
 Welcome to the home of jobs management - manage your recent jobs to get insight on how your job search.
 
@@ -10,4 +10,4 @@ Welcome to the home of jobs management - manage your recent jobs to get insight 
 
 `pnpm dev`
 
-Made with :heart: by Enock Kwabena Yawson
+Made with :heart: by GyBex

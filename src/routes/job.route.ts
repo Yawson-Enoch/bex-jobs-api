@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import {
   createJob,
   deleteJob,
@@ -7,10 +8,10 @@ import {
   getJobs,
   showStats,
   updateJob,
-} from '../controllers/job.controller';
-import requestValidatorMiddleware from '../middleware/requestValidator.middleware';
-import testUserMiddleware from '../middleware/testUser.middleware';
-import { jobParamsSchema, jobSchema } from '../schemas/job.schema';
+} from '@/controllers/job.controller';
+import requestValidatorMiddleware from '@/middleware/requestValidator.middleware';
+import testUserMiddleware from '@/middleware/testUser.middleware';
+import { jobParamsSchema, jobSchema } from '@/schemas/job.schema';
 
 const router = Router();
 

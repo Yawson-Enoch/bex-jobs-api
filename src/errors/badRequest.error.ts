@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+
 import CustomAPIError from './customAPI.error';
 
 export default class BadRequestError extends CustomAPIError {

@@ -8,16 +8,19 @@
     "build": "esbuild src/app.ts --bundle --platform=node --outfile=dist/app.cjs --format=cjs",
     "dev": "pnpm build && pnpm /dev:/",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
-    "dev:esbuild": "pnpm run build --watch",
+    "dev:esbuild": "pnpm build --watch",
     "dev:node": "node --watch dist/app.cjs",
-    "lint": "eslint",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "format": "prettier --check --ignore-unknown .",
-    "fix:types": "tsc",
-    "fix:lint": "eslint --fix",
-    "fix:format": "prettier --write --ignore-unknown .",
-    "fix": "pnpm fix:types && pnpm fix:lint && pnpm fix:format",
-    "seed": "tsx src/auto-populate.ts",
+    "format:fix": "prettier --write --ignore-unknown .",
+    "typecheck": "tsc",
+    "fix": "pnpm typecheck && pnpm lint:fix && pnpm format:fix",
     "prepare": "husky"
+  },
+  "prisma": {
+    "seed": "pnpx tsx src/prisma/seed.ts",
+    "schema": "src/prisma/schema.prisma"
   },
   "keywords": [
     "jobs",
@@ -27,6 +30,8 @@
   "license": "MIT",
   "description": "Jobs API to manage your recent job searches",
   "dependencies": {
+    "@ngneat/falso": "^7.3.0",
+    "@prisma/client": "^6.4.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -37,7 +42,6 @@
     "helmet": "^8.0.0",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.5",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -55,6 +59,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
     "prettier": "^3.4.2",
+    "prisma": "^6.4.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"

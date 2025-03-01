@@ -11,7 +11,6 @@ const env = cleanEnv(process.env, {
     choices: ['development', 'production'],
     default: 'development',
   }),
-  MONGO_URI: str(),
   PSWD_SALT: num(),
   JWT_SECRET_KEY: str(),
   JWT_EXPIRY_DATE: str(),

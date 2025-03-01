@@ -1,80 +1,97 @@
 import type { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { NotFoundError } from '../errors';
-import Job from '../models/job.model';
-import type { JobParams, Job as TJob } from '../schemas/job.schema';
+
+import { NotFoundError } from '@/errors';
+import type { JOB_STATUS_OPTIONS } from '@/lib/constants';
+import prisma from '@/prisma/prisma-client';
+import type { JobParams, Job as TJob } from '@/schemas/job.schema';
 
 const createJob = async (
   req: Request<unknown, unknown, TJob>,
   res: Response,
 ) => {
-  await Job.create({ ...req.body, createdBy: req.user._id });
+  await prisma.job.create({
+    data: {
+      ...req.body,
+      createdBy: req.user.id,
+    },
+  });
 
   res.status(StatusCodes.CREATED).json({ msg: 'Job created' });
 };
 
 const getJobs = async (req: Request, res: Response) => {
-  const { sort, search, status, type } = req.query;
+  const { sort, search, status, type, page, limit } = req.query;
 
-  const queryObject: Record<string, unknown> = {
-    createdBy: req.user._id,
+  /* query builder 
+  - update object values based on query params
+  - add: sort, search, status, type, ...
+  */
+  const filters: Record<string, unknown> = {
+    createdBy: req.user.id,
   };
 
   if (status && status !== 'all') {
-    queryObject.jobStatus = status;
+    filters.jobStatus = status;
   }
+
   if (type && type !== 'all') {
-    queryObject.jobType = type;
+    filters.jobType = type;
   }
+
   if (search) {
-    queryObject.$or = [
-      { company: { $regex: search, $options: 'i' } },
-      { jobLocation: { $regex: search, $options: 'i' } },
-      { jobPosition: { $regex: search, $options: 'i' } },
-      { jobType: { $regex: search, $options: 'i' } },
-      { jobStatus: { $regex: search, $options: 'i' } },
+    filters.OR = [
+      { company: { contains: search, mode: 'insensitive' } },
+      { jobLocation: { contains: search, mode: 'insensitive' } },
+      { jobPosition: { contains: search, mode: 'insensitive' } },
     ];
   }
 
-  let result = Job.find(queryObject);
+  let orderBy: Record<string, unknown>[] = [];
 
-  if (sort === 'latest') {
-    result = result.sort('-createdAt -updatedAt');
-  }
-  if (sort === 'oldest') {
-    result = result.sort('createdAt updatedAt');
-  }
-  if (sort === 'a-z') {
-    result = result.sort('jobPosition company jobLocation');
-  }
-  if (sort === 'z-a') {
-    result = result.sort('-jobPosition -company -jobLocation');
+  switch (sort) {
+    case 'latest':
+      orderBy = [{ updatedAt: 'desc' }, { createdAt: 'desc' }];
+      break;
+    case 'oldest':
+      orderBy = [{ updatedAt: 'asc' }, { createdAt: 'asc' }];
+      break;
+    case 'a-z':
+      orderBy = [{ company: 'asc' }, { jobLocation: 'asc' }];
+      break;
+    case 'z-a':
+      orderBy = [{ company: 'desc' }, { jobLocation: 'desc' }];
+      break;
   }
 
-  const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
-  result = result.skip(skip).limit(limit);
+  const pageNumber = Number(page) || 1;
+  const pageSize = Number(limit) || 10;
+  const skip = (pageNumber - 1) * pageSize;
 
-  const jobs = await result;
+  const result = await prisma.job.findMany({
+    where: filters,
+    skip,
+    take: pageSize,
+    orderBy,
+  });
 
-  /* based on query */
-  const totalNumberOfJobsBasedOnQuery = await Job.countDocuments(queryObject);
-  const totalNumberOfPagesBasedOnQuery = Math.ceil(
-    totalNumberOfJobsBasedOnQuery / limit,
-  );
-  const nextPage =
-    page * limit < totalNumberOfPagesBasedOnQuery ? page + 1 : null;
-  const prevPage = page > 1 ? page - 1 : null;
+  const totalJobs = await prisma.job.count({
+    where: filters,
+  });
+
+  const totalPages = Math.ceil(totalJobs / pageSize);
+
+  const nextPage = pageNumber < totalPages ? pageNumber + 1 : null;
+  const prevPage = pageNumber > 1 ? pageNumber - 1 : null;
 
   res.status(200).json({
     msg: 'Success',
-    data: jobs,
+    data: result,
     pagination: {
-      totalJobs: totalNumberOfJobsBasedOnQuery,
-      totalPages: totalNumberOfPagesBasedOnQuery,
-      perPage: limit,
-      currentPage: page,
+      totalJobs,
+      totalPages,
+      perPage: pageSize,
+      currentPage: pageNumber,
       nextPage: nextPage,
       prevPage: prevPage,
     },
@@ -82,9 +99,11 @@ const getJobs = async (req: Request, res: Response) => {
 };
 
 const getJob = async (req: Request<JobParams>, res: Response) => {
-  const job = await Job.findOne({
-    createdBy: req.user._id,
-    _id: req.params.jobID,
+  const job = await prisma.job.findFirst({
+    where: {
+      createdBy: req.user.id,
+      id: req.params.jobID,
+    },
   });
 
   if (!job) throw new NotFoundError(`No job with id: ${req.params.jobID}`);
@@ -96,19 +115,13 @@ const updateJob = async (
   req: Request<JobParams, unknown, TJob>,
   res: Response,
 ) => {
-  const filter = {
-    createdBy: req.user._id,
-    _id: req.params.jobID,
-  };
-
-  const update = req.body;
-
-  const options = {
-    new: true,
-    runValidators: true,
-  };
-
-  const job = await Job.findOneAndUpdate(filter, update, options);
+  const job = await prisma.job.update({
+    where: {
+      createdBy: req.user.id,
+      id: req.params.jobID,
+    },
+    data: req.body,
+  });
 
   if (!job) throw new NotFoundError(`No job with id: ${req.params.jobID}`);
 
@@ -116,15 +129,18 @@ const updateJob = async (
 };
 
 const deleteJobs = async (req: Request, res: Response) => {
-  await Job.deleteMany({ createdBy: req.user._id });
+  await prisma.job.deleteMany({
+    where: {
+      createdBy: req.user.id,
+    },
+  });
 
   res.status(StatusCodes.OK).json({ msg: 'All jobs deleted' });
 };
 
 const deleteJob = async (req: Request<JobParams>, res: Response) => {
-  const job = await Job.findOneAndDelete({
-    createdBy: req.user._id,
-    _id: req.params.jobID,
+  const job = await prisma.job.delete({
+    where: { createdBy: req.user.id, id: req.params.jobID },
   });
 
   if (!job) throw new NotFoundError(`No job with id: ${req.params.jobID}`);
@@ -133,15 +149,20 @@ const deleteJob = async (req: Request<JobParams>, res: Response) => {
 };
 
 const showStats = async (req: Request, res: Response) => {
-  const stats = (await Job.aggregate([
-    { $match: { createdBy: req.user._id } },
-    { $group: { _id: '$jobStatus', count: { $sum: 1 } } },
-  ])) as unknown as { _id: TJob['jobStatus']; count: number }[];
+  const stats = await prisma.job.groupBy({
+    by: ['jobStatus'],
+    where: {
+      createdBy: req.user.id,
+    },
+    _count: {
+      jobStatus: true,
+    },
+  });
 
   const statsByJobStatus = stats.reduce(
     (acc, curr) => {
-      const { _id: status, count } = curr;
-      acc[status] = count;
+      acc[curr.jobStatus as (typeof JOB_STATUS_OPTIONS)[number]] =
+        curr._count.jobStatus;
       return acc;
     },
     {
@@ -151,17 +172,27 @@ const showStats = async (req: Request, res: Response) => {
     },
   );
 
-  const monthlyApplications = (await Job.aggregate([
-    { $match: { createdBy: req.user._id } },
-    {
-      $group: {
-        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
-        count: { $sum: 1 },
+  type MonthlyApplicationsAggregate = {
+    _id: { year: number; month: number };
+    count: number;
+  }[];
+
+  const monthlyApplications = (await prisma.job.aggregateRaw({
+    pipeline: [
+      { $match: { createdBy: { $oid: req.user.id } } },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+          },
+          count: { $sum: 1 },
+        },
       },
-    },
-    { $sort: { '_id.year': -1, '_id.month': -1 } },
-    { $limit: 6 },
-  ])) as unknown as { _id: { year: number; month: number }; count: number }[];
+      { $sort: { '_id.year': -1, '_id.month': -1 } },
+      { $limit: 6 },
+    ],
+  })) as unknown as MonthlyApplicationsAggregate;
 
   const monthlyApplicationsFormatted = monthlyApplications
     .map((item) => {

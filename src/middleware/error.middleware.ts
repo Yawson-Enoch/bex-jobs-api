@@ -1,14 +1,15 @@
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Error as MongooseError } from 'mongoose';
 import { ZodError } from 'zod';
-import env from '../env';
-import { CustomAPIError } from '../errors';
-import { capitalizeFirstLetterOfWord } from '../lib/util';
+
+import env from '@/env';
+import { CustomAPIError } from '@/errors';
+import { capitalizeFirstLetterOfWord } from '@/lib/utils';
 
 interface AppError extends CustomAPIError {
-  code?: number;
-  keyValue?: Record<string, unknown>;
+  code?: number | string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  meta?: Record<string, any>;
 }
 
 const errorMiddleware = (
@@ -27,30 +28,16 @@ const errorMiddleware = (
         ? err.message
         : 'Something went wrong, try again later',
   };
-  /* invalid mongoDB id */
-  if (err instanceof MongooseError.CastError) {
-    const message = `Invalid ${err.path}: ${err.value}`;
-    customError.msg = message;
-    customError.statusCode = StatusCodes.BAD_REQUEST;
-  }
   /* duplicate unique key error 
   - eg: user signing up with same email as another user
   */
-  if (err.name === 'MongoServerError' && err.code === 11000) {
-    const errTexts: string[] = Object.keys(err.keyValue as object);
-    const validationError = errTexts.map((text: string) => text)[0] as string;
+  if (err.name === 'PrismaClientKnownRequestError' && err.code === 'P2002') {
+    const fieldName = err.meta!.target.split('_').at(1);
+
     const message = `${capitalizeFirstLetterOfWord(
-      validationError,
-    )} already exists, please use another ${validationError}`;
-    customError.msg = message;
-    customError.statusCode = StatusCodes.BAD_REQUEST;
-  }
-  /* missing required fields - here to catch ones just incase zod fails */
-  if (err instanceof MongooseError.ValidationError) {
-    const validationErrors = Object.values(err.errors).map(
-      (validationError) => validationError.message,
-    );
-    const message = `Invalid input data. ${validationErrors.join('. ')}`;
+      fieldName,
+    )} already exists, please use another ${fieldName}`;
+
     customError.msg = message;
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }

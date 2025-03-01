@@ -1,11 +1,11 @@
 import 'express-async-errors';
-import type { Server } from 'http';
+
 import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+
 import env from './env';
-import connectDb from './lib/connectDb';
 import authMiddleware from './middleware/auth.middleware';
 import errorMiddleware from './middleware/error.middleware';
 import routeNotFoundMiddleware from './middleware/routeNotFound.middleware';
@@ -37,21 +37,10 @@ app.use('/api/v1/jobs', authMiddleware, jobRoute);
 app.use(routeNotFoundMiddleware);
 app.use(errorMiddleware);
 
-let server: Server;
-
-/* connect to db and open port */
-connectDb(env.MONGO_URI)
-  .then(() => {
-    console.log('DB connected successfully!');
-
-    server = app.listen(env.PORT, () => {
-      const serverType = env.isProduction ? 'production' : 'dev';
-      console.log(`Server (${serverType}) running on port (${env.PORT})`);
-    });
-  })
-  .catch((err: Error) =>
-    console.error({ errorName: err.name, errorMessage: err.message }),
-  );
+const server = app.listen(env.PORT, () => {
+  const serverType = env.isProduction ? 'production' : 'dev';
+  console.log(`Server (${serverType}) running on port (${env.PORT})`);
+});
 
 process.on('unhandledRejection', (err: Error) => {
   console.error({ errorName: err.name, errorMessage: err.message });

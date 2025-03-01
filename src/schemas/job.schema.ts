@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { JOB_STATUS_OPTIONS, JOB_TYPES } from '@/lib/constants';
+
 export const jobParamsSchema = z.object({
   jobID: z.string({
     required_error: 'Please provide route param',
@@ -8,9 +10,6 @@ export const jobParamsSchema = z.object({
 });
 
 export type JobParams = z.infer<typeof jobParamsSchema>;
-
-const STATUS_OPTIONS = ['pending', 'interview', 'declined'] as const;
-const JOB_TYPES = ['full-time', 'part-time', 'remote', 'internship'] as const;
 
 export const jobSchema = z.object({
   jobPosition: z
@@ -40,12 +39,8 @@ export const jobSchema = z.object({
     .max(100, {
       message: 'Location name cannot be more than 200 characters long',
     }),
-  jobStatus: z.enum(STATUS_OPTIONS).default('pending'),
-  jobType: z
-    .enum(JOB_TYPES, {
-      errorMap: () => ({ message: 'Job type is required' }),
-    })
-    .default('full-time'),
+  jobStatus: z.enum(JOB_STATUS_OPTIONS).default('pending'),
+  jobType: z.enum(JOB_TYPES).default('full-time'),
 });
 
 export type Job = z.infer<typeof jobSchema>;
