@@ -11,7 +11,11 @@ import {
 } from '@/controllers/job.controller';
 import requestValidatorMiddleware from '@/middleware/requestValidator.middleware';
 import testUserMiddleware from '@/middleware/testUser.middleware';
-import { jobParamsSchema, jobSchema } from '@/schemas/job.schema';
+import {
+  jobParamsSchema,
+  jobSchema,
+  updateJobSchema,
+} from '@/schemas/job.schema';
 
 const router = Router();
 
@@ -44,7 +48,7 @@ router
   .patch(
     [
       requestValidatorMiddleware({
-        body: jobSchema,
+        body: updateJobSchema,
       }),
       testUserMiddleware,
     ],

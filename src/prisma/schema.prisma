@@ -14,7 +14,7 @@ model User {
   lastName  String
   password  String
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
    @@map("users")
 }
 
@@ -27,7 +27,7 @@ model Job {
   jobType     String
   createdBy   String   @db.ObjectId
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
    @@map("jobs")
 }
 
