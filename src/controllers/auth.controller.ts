@@ -1,13 +1,10 @@
 import type { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import jwt from 'jsonwebtoken';
 
-import env from '@/env';
 import { NotFoundError, UnauthenticatedError } from '@/errors';
-import { comparePassword, hashPassword } from '@/lib/utils';
+import { comparePassword, hashPassword, jwtSign } from '@/lib/auth';
 import prisma from '@/prisma/prisma-client';
 import type { Login, Register, UpdateProfile } from '@/schemas/auth.schema';
-import type { AuthUser } from '@/types/auth-user';
 
 const register = async (
   req: Request<unknown, unknown, Register>,
@@ -17,13 +14,27 @@ const register = async (
 
   const hashedPassword = await hashPassword(password);
 
-  await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       ...userData,
       password: hashedPassword,
     },
+    select: {
+      id: true,
+      email: true,
+    },
   });
-  res.status(StatusCodes.CREATED).json({ msg: 'User created successfully' });
+
+  if (!user) throw new UnauthenticatedError('Signup failed');
+
+  const token = jwtSign({ ...user });
+
+  res.status(StatusCodes.OK).json({
+    msg: 'Signup successful',
+    data: {
+      token,
+    },
+  });
 };
 
 const login = async (req: Request<unknown, unknown, Login>, res: Response) => {
@@ -40,16 +51,7 @@ const login = async (req: Request<unknown, unknown, Login>, res: Response) => {
   if (!isAMatchingPassword)
     throw new UnauthenticatedError('Invalid credentials');
 
-  const token = jwt.sign(
-    {
-      id: user.id,
-      email: user.email,
-    } satisfies AuthUser,
-    env.JWT_SECRET_KEY,
-    {
-      expiresIn: env.JWT_EXPIRY_DATE,
-    },
-  );
+  const token = jwtSign({ ...user });
 
   res.status(StatusCodes.OK).json({
     msg: 'Login successful',
